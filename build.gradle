@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.0'
+    }
+}
+
+repositories {
+    jcenter()
+    mavenLocal()
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 23
+        applicationId="com.google.sample.cast.refplayer"
+    }
+    enforceUniquePackageName=false
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    lintOptions.abortOnError false
+
+    sourceSets.main {
+        manifest.srcFile 'AndroidManifest.xml'
+        java.srcDirs = ['src']
+        res.srcDirs = ['res']
+    }
+}
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:mediarouter-v7:23.4.0'
+    compile 'com.android.support:recyclerview-v7:23.4.0'
+    compile 'com.google.android.gms:play-services-cast-framework:9.2.0'
+    compile 'com.googlecode.android-query:android-query:0.25.9'
+}

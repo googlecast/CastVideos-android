@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright 2015 Google Inc. All rights reserved.
+  Copyright 2016 Google Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,12 +24,20 @@
         <!-- The rest of your attributes -->
         <item name="castMiniControllerStyle">@style/CustomCastMiniController</item>
         <item name="castIntroOverlayStyle">@style/CustomCastIntroOverlay</item>
+        <item name="castExpandedControllerStyle">@style/CustomCastExpandedController</item>
+        <item name="castExpandedControllerToolbarStyle">
+            @style/ThemeOverlay.AppCompat.Dark.ActionBar
+        </item>
     </style>
 
     <style name="Theme.CastVideosDark" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimaryDark">@color/black</item>
         <item name="castMiniControllerStyle">@style/CustomCastMiniController</item>
         <item name="castIntroOverlayStyle">@style/CustomCastIntroOverlay</item>
+        <item name="castExpandedControllerStyle">@style/CustomCastExpandedController</item>
+        <item name="castExpandedControllerToolbarStyle">
+            @style/ThemeOverlay.AppCompat.Dark.ActionBar
+        </item>
     </style>
 
     <style name="YellowSeekBar" parent="android:Widget.SeekBar">
@@ -87,5 +95,6 @@
         <item name="castSubtitleTextAppearance">@style/TextAppearance.AppCompat.Caption</item>
     </style>
 
-</resources>
+    <style name="CustomCastExpandedController" parent="CastExpandedController"/>
 
+</resources>

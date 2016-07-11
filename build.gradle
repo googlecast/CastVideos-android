@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.android.tools.build:gradle:2.1.2'
     }
 }
 
@@ -41,6 +41,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:mediarouter-v7:23.4.0'
     compile 'com.android.support:recyclerview-v7:23.4.0'
-    compile 'com.google.android.gms:play-services-cast-framework:9.2.0'
+    compile 'com.google.android.gms:play-services-cast-framework:9.4.0'
     compile 'com.googlecode.android-query:android-query:0.25.9'
 }

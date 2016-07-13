@@ -332,13 +332,35 @@ public class LocalPlayerActivity extends AppCompatActivity {
         if (mCastSession == null) {
             return;
         }
-        RemoteMediaClient remoteMediaClient = mCastSession.getRemoteMediaClient();
+        final RemoteMediaClient remoteMediaClient = mCastSession.getRemoteMediaClient();
         if (remoteMediaClient == null) {
             return;
         }
+        remoteMediaClient.addListener(new RemoteMediaClient.Listener() {
+            @Override
+            public void onStatusUpdated() {
+                Intent intent = new Intent(LocalPlayerActivity.this, ExpandedControlsActivity.class);
+                startActivity(intent);
+                remoteMediaClient.removeListener(this);
+            }
+
+            @Override
+            public void onMetadataUpdated() {
+            }
+
+            @Override
+            public void onQueueStatusUpdated() {
+            }
+
+            @Override
+            public void onPreloadStatusUpdated() {
+            }
+
+            @Override
+            public void onSendingRemoteMediaRequest() {
+            }
+        });
         remoteMediaClient.load(mSelectedMedia, autoPlay, position);
-        Intent intent = new Intent(this, ExpandedControlsActivity.class);
-        startActivity(intent);
     }
 
     private void setCoverArtStatus(String url) {

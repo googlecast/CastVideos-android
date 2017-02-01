@@ -359,6 +359,11 @@ public class LocalPlayerActivity extends AppCompatActivity {
             @Override
             public void onSendingRemoteMediaRequest() {
             }
+
+            @Override
+            public void onAdBreakStatusUpdated() {
+
+            }
         });
         remoteMediaClient.load(mSelectedMedia, autoPlay, position);
     }

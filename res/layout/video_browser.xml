@@ -40,7 +40,7 @@
 
     <fragment
         android:id="@+id/cast_mini_controller"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:visibility="gone"

@@ -37,7 +37,7 @@
 
         <LinearLayout
             android:id="@+id/text_container"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/menu"
@@ -47,7 +47,7 @@
 
             <TextView
                 android:id="@+id/textView1"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="2"
@@ -56,7 +56,7 @@
 
             <TextView
                 android:id="@+id/textView2"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:ellipsize="end"

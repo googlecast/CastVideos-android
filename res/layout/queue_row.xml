@@ -21,7 +21,7 @@
     android:foreground="?selectableItemBackground"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
-    <View android:layout_width="fill_parent" android:layout_height="fill_parent"
+    <View android:layout_width="match_parent" android:layout_height="match_parent"
           android:background="@drawable/bg_swipe_item_right" />
 
     <RelativeLayout
@@ -118,7 +118,7 @@
 
             <TextView
                 android:id="@+id/textView2"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:ellipsize="end"
@@ -130,7 +130,7 @@
 
         <View
             android:layout_alignParentBottom="true"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_toRightOf="@+id/imageView1"
             android:background="@drawable/vertical_divider" />

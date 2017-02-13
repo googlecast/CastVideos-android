@@ -22,7 +22,7 @@
 
     <fragment
         android:id="@+id/cast_mini_controller"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:castShowImageThumbnail="true"
@@ -48,8 +48,8 @@
 
         <ImageView
             android:id="@+id/coverArtView"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:scaleType="fitXY"
             android:visibility="gone" />
 
@@ -86,7 +86,7 @@
 
         <RelativeLayout
             android:id="@+id/control_bar"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="45dp"
             android:layout_alignParentBottom="true" >
 
@@ -100,7 +100,7 @@
             <TextView
                 android:id="@+id/startText"
                 android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+                android:layout_height="match_parent"
                 android:layout_marginLeft="5dp"
                 android:layout_toRightOf="@+id/playPauseImageView"
                 android:gravity="center_vertical"
@@ -111,7 +111,7 @@
             <TextView
                 android:id="@+id/endText"
                 android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+                android:layout_height="match_parent"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="16dp"
                 android:gravity="center_vertical"
@@ -121,7 +121,7 @@
 
             <SeekBar
                 android:id="@+id/seekBar1"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_gravity="center"
@@ -135,7 +135,7 @@
 
     <TextView
         android:id="@+id/titleTextView"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/videoView1"
@@ -147,7 +147,7 @@
 
     <TextView
         android:id="@+id/authorTextView"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/titleTextView"
         android:layout_alignRight="@+id/titleTextView"
@@ -158,7 +158,7 @@
 
     <TextView
         android:id="@+id/descriptionTextView"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/cast_mini_controller"
         android:layout_alignLeft="@+id/titleTextView"

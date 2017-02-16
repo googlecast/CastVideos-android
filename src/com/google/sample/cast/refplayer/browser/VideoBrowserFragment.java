@@ -51,11 +51,11 @@ public class VideoBrowserFragment extends Fragment implements VideoListAdapter.I
     private static final String TAG = "VideoBrowserFragment";
     private static final String CATALOG_URL =
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/CastVideos/f.json";
-    private RecyclerView mRecyclerView;
-    private VideoListAdapter mAdapter;
-    private View mEmptyView;
-    private View mLoadingView;
-    private final SessionManagerListener<CastSession> mSessionManagerListener =
+    private RecyclerView recyclerView;
+    private VideoListAdapter adapter;
+    private View emptyView;
+    private View loadingView;
+    private final SessionManagerListener<CastSession> sessionManagerListener =
             new MySessionManagerListener();
 
     public VideoBrowserFragment() {
@@ -70,14 +70,14 @@ public class VideoBrowserFragment extends Fragment implements VideoListAdapter.I
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mRecyclerView = (RecyclerView) getView().findViewById(R.id.list);
-        mEmptyView = getView().findViewById(R.id.empty_view);
-        mLoadingView = getView().findViewById(R.id.progress_indicator);
+        recyclerView = (RecyclerView) getView().findViewById(R.id.list);
+        emptyView = getView().findViewById(R.id.empty_view);
+        loadingView = getView().findViewById(R.id.progress_indicator);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new VideoListAdapter(this, getContext());
-        mRecyclerView.setAdapter(mAdapter);
+        recyclerView.setLayoutManager(layoutManager);
+        adapter = new VideoListAdapter(this, getContext());
+        recyclerView.setAdapter(adapter);
         getLoaderManager().initLoader(0, null, this);
     }
 
@@ -88,7 +88,7 @@ public class VideoBrowserFragment extends Fragment implements VideoListAdapter.I
         } else {
             String transitionName = getString(R.string.transition_image);
             VideoListAdapter.ViewHolder viewHolder =
-                    (VideoListAdapter.ViewHolder) mRecyclerView.findViewHolderForPosition(position);
+                    (VideoListAdapter.ViewHolder) recyclerView.findViewHolderForPosition(position);
             Pair<View, String> imagePair = Pair
                     .create((View) viewHolder.getImageView(), transitionName);
             ActivityOptionsCompat options = ActivityOptionsCompat
@@ -108,27 +108,27 @@ public class VideoBrowserFragment extends Fragment implements VideoListAdapter.I
 
     @Override
     public void onLoadFinished(Loader<List<MediaInfo>> loader, List<MediaInfo> data) {
-        mAdapter.setData(data);
-        mLoadingView.setVisibility(View.GONE);
-        mEmptyView.setVisibility(null == data || data.isEmpty() ? View.VISIBLE : View.GONE);
+        adapter.setData(data);
+        loadingView.setVisibility(View.GONE);
+        emptyView.setVisibility(null == data || data.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public void onLoaderReset(Loader<List<MediaInfo>> loader) {
-        mAdapter.setData(null);
+        adapter.setData(null);
     }
 
     @Override
     public void onStart() {
         CastContext.getSharedInstance(getContext()).getSessionManager()
-                .addSessionManagerListener(mSessionManagerListener, CastSession.class);
+                .addSessionManagerListener(sessionManagerListener, CastSession.class);
         super.onStart();
     }
 
     @Override
     public void onStop() {
         CastContext.getSharedInstance(getContext()).getSessionManager()
-                .removeSessionManagerListener(mSessionManagerListener, CastSession.class);
+                .removeSessionManagerListener(sessionManagerListener, CastSession.class);
         super.onStop();
     }
 
@@ -136,17 +136,17 @@ public class VideoBrowserFragment extends Fragment implements VideoListAdapter.I
 
         @Override
         public void onSessionEnded(CastSession session, int error) {
-            mAdapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
         }
 
         @Override
         public void onSessionResumed(CastSession session, boolean wasSuspended) {
-            mAdapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
         }
 
         @Override
         public void onSessionStarted(CastSession session, String sessionId) {
-            mAdapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
         }
 
         @Override

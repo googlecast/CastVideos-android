@@ -44,8 +44,8 @@ public class QueueListViewFragment extends Fragment
         implements QueueListAdapter.OnStartDragListener {
 
     private static final String TAG = "QueueListViewFragment";
-    private QueueDataProvider mProvider;
-    private ItemTouchHelper mItemTouchHelper;
+    private QueueDataProvider provider;
+    private ItemTouchHelper itemTouchHelper;
 
     public QueueListViewFragment() {
         super();
@@ -59,14 +59,14 @@ public class QueueListViewFragment extends Fragment
 
     @Override
     public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
-        mItemTouchHelper.startDrag(viewHolder);
+        itemTouchHelper.startDrag(viewHolder);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         RecyclerView recyclerView = (RecyclerView) getView().findViewById(R.id.recycler_view);
-        mProvider = QueueDataProvider.getInstance(getContext());
+        provider = QueueDataProvider.getInstance(getContext());
 
         QueueListAdapter adapter = new QueueListAdapter(getActivity(), this);
         recyclerView.setHasFixedSize(true);
@@ -74,8 +74,8 @@ public class QueueListViewFragment extends Fragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         ItemTouchHelper.Callback callback = new QueueItemTouchHelperCallback(adapter);
-        mItemTouchHelper = new ItemTouchHelper(callback);
-        mItemTouchHelper.attachToRecyclerView(recyclerView);
+        itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
 
         adapter.setEventListener(new QueueListAdapter.EventListener() {
             @Override
@@ -92,11 +92,11 @@ public class QueueListViewFragment extends Fragment
                         onPlayPauseClicked(view);
                         break;
                     case R.id.play_upcoming:
-                        mProvider.onUpcomingPlayClicked(view,
+                        provider.onUpcomingPlayClicked(view,
                                 (MediaQueueItem) view.getTag(R.string.queue_tag_item));
                         break;
                     case R.id.stop_upcoming:
-                        mProvider.onUpcomingStopClicked(view,
+                        provider.onUpcomingStopClicked(view,
                                 (MediaQueueItem) view.getTag(R.string.queue_tag_item));
                         break;
                 }
@@ -117,15 +117,15 @@ public class QueueListViewFragment extends Fragment
             return;
         }
         MediaQueueItem item = (MediaQueueItem) view.getTag(R.string.queue_tag_item);
-        if (mProvider.isQueueDetached()) {
+        if (provider.isQueueDetached()) {
             Log.d(TAG, "Is detached: itemId = " + item.getItemId());
 
-            int currentPosition = mProvider.getPositionByItemId(item.getItemId());
-            MediaQueueItem[] items = Utils.rebuildQueue(mProvider.getItems());
+            int currentPosition = provider.getPositionByItemId(item.getItemId());
+            MediaQueueItem[] items = Utils.rebuildQueue(provider.getItems());
             remoteMediaClient.queueLoad(items, currentPosition,
                     MediaStatus.REPEAT_MODE_REPEAT_OFF, null);
         } else {
-            int currentItemId = mProvider.getCurrentItemId();
+            int currentItemId = provider.getCurrentItemId();
             if (currentItemId == item.getItemId()) {
                 // We selected the one that is currently playing so we take the user to the
                 // full screen controller

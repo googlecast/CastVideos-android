@@ -25,10 +25,10 @@ import android.support.v7.widget.helper.ItemTouchHelper;
  */
 public class QueueItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
-    private final ItemTouchHelperAdapter mAdapter;
+    private final ItemTouchHelperAdapter adapter;
 
     public QueueItemTouchHelperCallback(ItemTouchHelperAdapter adapter) {
-        mAdapter = adapter;
+        this.adapter = adapter;
     }
 
     @Override
@@ -55,13 +55,13 @@ public class QueueItemTouchHelperCallback extends ItemTouchHelper.Callback {
             return false;
         }
 
-        mAdapter.onItemMove(source.getAdapterPosition(), target.getAdapterPosition());
+        adapter.onItemMove(source.getAdapterPosition(), target.getAdapterPosition());
         return true;
     }
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int i) {
-        mAdapter.onItemDismiss(viewHolder.getAdapterPosition());
+        adapter.onItemDismiss(viewHolder.getAdapterPosition());
     }
 
     @Override
@@ -71,7 +71,7 @@ public class QueueItemTouchHelperCallback extends ItemTouchHelper.Callback {
             if (viewHolder instanceof QueueListAdapter.QueueItemViewHolder) {
                 QueueListAdapter.QueueItemViewHolder queueHolder
                         = (QueueListAdapter.QueueItemViewHolder) viewHolder;
-                ViewCompat.setTranslationX(queueHolder.mContainer, dX);
+                ViewCompat.setTranslationX(queueHolder.container, dX);
             }
         } else {
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);

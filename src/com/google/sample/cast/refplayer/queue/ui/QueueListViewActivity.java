@@ -48,38 +48,38 @@ public class QueueListViewActivity extends AppCompatActivity {
     private static final String FRAGMENT_LIST_VIEW = "list view";
     private static final String TAG = "QueueListViewActivity";
 
-    private final RemoteMediaClient.Listener mRemoteMediaClientListener =
+    private final RemoteMediaClient.Listener remoteMediaClientListener =
             new MyRemoteMediaClientListener();
-    private final SessionManagerListener<CastSession> mSessionManagerListener =
+    private final SessionManagerListener<CastSession> sessionManagerListener =
             new MySessionManagerListener();
-    private CastContext mCastContext;
-    private RemoteMediaClient mRemoteMediaClient;
-    private View mEmptyView;
+    private CastContext castContext;
+    private RemoteMediaClient remoteMediaClient;
+    private View emptyView;
 
     private class MySessionManagerListener implements SessionManagerListener<CastSession> {
 
         @Override
         public void onSessionEnded(CastSession session, int error) {
-            if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.removeListener(mRemoteMediaClientListener);
+            if (remoteMediaClient != null) {
+                remoteMediaClient.removeListener(remoteMediaClientListener);
             }
-            mRemoteMediaClient = null;
-            mEmptyView.setVisibility(View.VISIBLE);
+            remoteMediaClient = null;
+            emptyView.setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onSessionResumed(CastSession session, boolean wasSuspended) {
-            mRemoteMediaClient = getRemoteMediaClient();
-            if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.addListener(mRemoteMediaClientListener);
+            remoteMediaClient = getRemoteMediaClient();
+            if (remoteMediaClient != null) {
+                remoteMediaClient.addListener(remoteMediaClientListener);
             }
         }
 
         @Override
         public void onSessionStarted(CastSession session, String sessionId) {
-            mRemoteMediaClient = getRemoteMediaClient();
-            if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.addListener(mRemoteMediaClientListener);
+            remoteMediaClient = getRemoteMediaClient();
+            if (remoteMediaClient != null) {
+                remoteMediaClient.addListener(remoteMediaClientListener);
             }
         }
 
@@ -105,10 +105,10 @@ public class QueueListViewActivity extends AppCompatActivity {
 
         @Override
         public void onSessionSuspended(CastSession session, int reason) {
-            if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.removeListener(mRemoteMediaClientListener);
+            if (remoteMediaClient != null) {
+                remoteMediaClient.removeListener(remoteMediaClientListener);
             }
-            mRemoteMediaClient = null;
+            remoteMediaClient = null;
         }
     }
 
@@ -137,13 +137,13 @@ public class QueueListViewActivity extends AppCompatActivity {
         }
 
         private void updateMediaQueue() {
-            MediaStatus mediaStatus = mRemoteMediaClient.getMediaStatus();
+            MediaStatus mediaStatus = remoteMediaClient.getMediaStatus();
             List<MediaQueueItem> queueItems =
                     (mediaStatus == null) ? null : mediaStatus.getQueueItems();
             if (queueItems == null || queueItems.isEmpty()) {
-                mEmptyView.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.VISIBLE);
             } else {
-                mEmptyView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.GONE);
             }
         }
     }
@@ -160,9 +160,9 @@ public class QueueListViewActivity extends AppCompatActivity {
                     .commit();
         }
         setupActionBar();
-        mEmptyView = findViewById(R.id.empty);
-        mCastContext = CastContext.getSharedInstance(this);
-        mCastContext.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
+        emptyView = findViewById(R.id.empty);
+        castContext = CastContext.getSharedInstance(this);
+        castContext.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
     }
 
 
@@ -175,11 +175,11 @@ public class QueueListViewActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        if (mRemoteMediaClient != null) {
-            mRemoteMediaClient.removeListener(mRemoteMediaClientListener);
+        if (remoteMediaClient != null) {
+            remoteMediaClient.removeListener(remoteMediaClientListener);
         }
-        mCastContext.getSessionManager().removeSessionManagerListener(
-                mSessionManagerListener, CastSession.class);
+        castContext.getSessionManager().removeSessionManagerListener(
+                sessionManagerListener, CastSession.class);
         super.onPause();
     }
 
@@ -210,31 +210,31 @@ public class QueueListViewActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
-        return mCastContext.onDispatchVolumeKeyEventBeforeJellyBean(event)
+        return castContext.onDispatchVolumeKeyEventBeforeJellyBean(event)
                 || super.dispatchKeyEvent(event);
     }
 
     @Override
     protected void onResume() {
-        mCastContext.getSessionManager().addSessionManagerListener(
-                mSessionManagerListener, CastSession.class);
-        if (mRemoteMediaClient == null) {
-            mRemoteMediaClient = getRemoteMediaClient();
+        castContext.getSessionManager().addSessionManagerListener(
+                sessionManagerListener, CastSession.class);
+        if (remoteMediaClient == null) {
+            remoteMediaClient = getRemoteMediaClient();
         }
-        if (mRemoteMediaClient != null) {
-            mRemoteMediaClient.addListener(mRemoteMediaClientListener);
-            MediaStatus mediaStatus = mRemoteMediaClient.getMediaStatus();
+        if (remoteMediaClient != null) {
+            remoteMediaClient.addListener(remoteMediaClientListener);
+            MediaStatus mediaStatus = remoteMediaClient.getMediaStatus();
             List<MediaQueueItem> queueItems =
                     (mediaStatus == null) ? null : mediaStatus.getQueueItems();
             if (queueItems != null && !queueItems.isEmpty()) {
-                mEmptyView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.GONE);
             }
         }
         super.onResume();
     }
 
     private RemoteMediaClient getRemoteMediaClient() {
-        CastSession castSession = mCastContext.getSessionManager().getCurrentCastSession();
+        CastSession castSession = castContext.getSessionManager().getCurrentCastSession();
         return (castSession != null && castSession.isConnected())
                 ? castSession.getRemoteMediaClient() : null;
     }

@@ -41,13 +41,13 @@ import java.util.List;
 public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.ViewHolder> {
 
     private static final float ASPECT_RATIO = 9f / 16f;
-    private final ItemClickListener mClickListener;
-    private final Context mAppContext;
+    private final ItemClickListener clickListener;
+    private final Context appContext;
     private List<MediaInfo> videos;
 
     public VideoListAdapter(ItemClickListener clickListener, Context context) {
-        mClickListener = clickListener;
-        mAppContext = context.getApplicationContext();
+        this.clickListener = clickListener;
+        appContext = context.getApplicationContext();
     }
 
     @Override
@@ -68,23 +68,23 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.View
         viewHolder.mMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mClickListener.itemClicked(view, item, position);
+                clickListener.itemClicked(view, item, position);
             }
         });
         viewHolder.mImgView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mClickListener.itemClicked(view, item, position);
+                clickListener.itemClicked(view, item, position);
             }
         });
 
         viewHolder.mTextContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mClickListener.itemClicked(view, item, position);
+                clickListener.itemClicked(view, item, position);
             }
         });
-        CastSession castSession = CastContext.getSharedInstance(mAppContext).getSessionManager()
+        CastSession castSession = CastContext.getSharedInstance(appContext).getSessionManager()
                 .getCurrentCastSession();
         viewHolder.mMenu.setVisibility(
                 (castSession != null && castSession.isConnected()) ? View.VISIBLE : View.GONE);

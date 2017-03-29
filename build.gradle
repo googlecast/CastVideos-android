@@ -1,9 +1,15 @@
+apply plugin: 'com.android.application'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.4.1'
+}
+
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.2'
+        classpath 'com.android.tools.build:gradle:2.3.0'
     }
 }
 
@@ -12,15 +18,13 @@ repositories {
     mavenLocal()
 }
 
-apply plugin: 'com.android.application'
-
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion 23
+        minSdkVersion 14
+        targetSdkVersion 25
         applicationId="com.google.sample.cast.refplayer"
     }
     enforceUniquePackageName=false
@@ -38,9 +42,9 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:mediarouter-v7:23.4.0'
-    compile 'com.android.support:recyclerview-v7:23.4.0'
-    compile 'com.google.android.gms:play-services-cast-framework:9.4.0'
+    compile 'com.android.support:appcompat-v7:25.3.0'
+    compile 'com.android.support:mediarouter-v7:25.3.0'
+    compile 'com.android.support:recyclerview-v7:25.3.0'
+    compile 'com.google.android.gms:play-services-cast-framework:10.2.1'
     compile 'com.googlecode.android-query:android-query:0.25.9'
 }

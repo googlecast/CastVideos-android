@@ -136,6 +136,10 @@ public class QueueListViewActivity extends AppCompatActivity {
         public void onSendingRemoteMediaRequest() {
         }
 
+        @Override
+        public void onAdBreakStatusUpdated() {
+        }
+
         private void updateMediaQueue() {
             MediaStatus mediaStatus = mRemoteMediaClient.getMediaStatus();
             List<MediaQueueItem> queueItems =

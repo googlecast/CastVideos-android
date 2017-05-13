@@ -34,7 +34,9 @@ import java.util.List;
 
 /**
  * Implements {@link OptionsProvider} to provide {@link CastOptions}.
+ * This class is designated in AndroidManifest.xml. It's instantiation is handled by the SDK.
  */
+@SuppressWarnings("unused")
 public class CastOptionsProvider implements OptionsProvider {
 
     @Override

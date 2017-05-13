@@ -32,7 +32,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,35 +42,35 @@ import android.view.MenuItem;
 public class VideoBrowserActivity extends AppCompatActivity {
 
     private static final String TAG = "VideoBrowserActivity";
-    private CastContext mCastContext;
-    private final SessionManagerListener<CastSession> mSessionManagerListener =
+    private CastContext castContext;
+    private final SessionManagerListener<CastSession> sessionManagerListener =
             new MySessionManagerListener();
-    private CastSession mCastSession;
+    private CastSession castSession;
     private MenuItem mediaRouteMenuItem;
-    private MenuItem mQueueMenuItem;
-    private Toolbar mToolbar;
-    private IntroductoryOverlay mIntroductoryOverlay;
-    private CastStateListener mCastStateListener;
+    private MenuItem queueMenuItem;
+    private Toolbar toolbar;
+    private IntroductoryOverlay introductoryOverlay;
+    private CastStateListener castStateListener;
 
     private class MySessionManagerListener implements SessionManagerListener<CastSession> {
 
         @Override
         public void onSessionEnded(CastSession session, int error) {
-            if (session == mCastSession) {
-                mCastSession = null;
+            if (session == castSession) {
+                castSession = null;
             }
             invalidateOptionsMenu();
         }
 
         @Override
         public void onSessionResumed(CastSession session, boolean wasSuspended) {
-            mCastSession = session;
+            castSession = session;
             invalidateOptionsMenu();
         }
 
         @Override
         public void onSessionStarted(CastSession session, String sessionId) {
-            mCastSession = session;
+            castSession = session;
             invalidateOptionsMenu();
         }
 
@@ -111,7 +110,7 @@ public class VideoBrowserActivity extends AppCompatActivity {
         setContentView(R.layout.video_browser);
         setupActionBar();
 
-        mCastStateListener = new CastStateListener() {
+        castStateListener = new CastStateListener() {
             @Override
             public void onCastStateChanged(int newState) {
                 if (newState != CastState.NO_DEVICES_AVAILABLE) {
@@ -119,13 +118,13 @@ public class VideoBrowserActivity extends AppCompatActivity {
                 }
             }
         };
-        mCastContext = CastContext.getSharedInstance(this);
-        mCastContext.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
+        castContext = CastContext.getSharedInstance(this);
+        castContext.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
     }
 
     private void setupActionBar() {
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     @Override
@@ -134,7 +133,7 @@ public class VideoBrowserActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.browse, menu);
         mediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(getApplicationContext(), menu,
                 R.id.media_route_menu_item);
-        mQueueMenuItem = menu.findItem(R.id.action_show_queue);
+        queueMenuItem = menu.findItem(R.id.action_show_queue);
         showIntroductoryOverlay();
         return true;
     }
@@ -142,7 +141,7 @@ public class VideoBrowserActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.findItem(R.id.action_show_queue).setVisible(
-                (mCastSession != null) && mCastSession.isConnected());
+                (castSession != null) && castSession.isConnected());
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -161,43 +160,43 @@ public class VideoBrowserActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
-        return mCastContext.onDispatchVolumeKeyEventBeforeJellyBean(event)
+        return castContext.onDispatchVolumeKeyEventBeforeJellyBean(event)
                 || super.dispatchKeyEvent(event);
     }
 
     @Override
     protected void onResume() {
-        mCastContext.addCastStateListener(mCastStateListener);
-        mCastContext.getSessionManager().addSessionManagerListener(
-                mSessionManagerListener, CastSession.class);
-        if (mCastSession == null) {
-            mCastSession = CastContext.getSharedInstance(this).getSessionManager()
+        castContext.addCastStateListener(castStateListener);
+        castContext.getSessionManager().addSessionManagerListener(
+                sessionManagerListener, CastSession.class);
+        if (castSession == null) {
+            castSession = CastContext.getSharedInstance(this).getSessionManager()
                     .getCurrentCastSession();
         }
-        if (mQueueMenuItem != null) {
-            mQueueMenuItem.setVisible(
-                    (mCastSession != null) && mCastSession.isConnected());
+        if (queueMenuItem != null) {
+            queueMenuItem.setVisible(
+                    (castSession != null) && castSession.isConnected());
         }
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        mCastContext.removeCastStateListener(mCastStateListener);
-        mCastContext.getSessionManager().removeSessionManagerListener(
-                mSessionManagerListener, CastSession.class);
+        castContext.removeCastStateListener(castStateListener);
+        castContext.getSessionManager().removeSessionManagerListener(
+                sessionManagerListener, CastSession.class);
         super.onPause();
     }
 
     private void showIntroductoryOverlay() {
-        if (mIntroductoryOverlay != null) {
-            mIntroductoryOverlay.remove();
+        if (introductoryOverlay != null) {
+            introductoryOverlay.remove();
         }
         if ((mediaRouteMenuItem != null) && mediaRouteMenuItem.isVisible()) {
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
-                    mIntroductoryOverlay = new IntroductoryOverlay.Builder(
+                    introductoryOverlay = new IntroductoryOverlay.Builder(
                             VideoBrowserActivity.this, mediaRouteMenuItem)
                             .setTitleText(getString(R.string.introducing_cast))
                             .setOverlayColor(R.color.primary)
@@ -206,11 +205,11 @@ public class VideoBrowserActivity extends AppCompatActivity {
                                     new IntroductoryOverlay.OnOverlayDismissedListener() {
                                         @Override
                                         public void onOverlayDismissed() {
-                                            mIntroductoryOverlay = null;
+                                            introductoryOverlay = null;
                                         }
                                     })
                             .build();
-                    mIntroductoryOverlay.show();
+                    introductoryOverlay.show();
                 }
             });
         }

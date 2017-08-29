@@ -120,7 +120,6 @@ public class VideoBrowserActivity extends AppCompatActivity {
             }
         };
         mCastContext = CastContext.getSharedInstance(this);
-        mCastContext.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
     }
 
     private void setupActionBar() {

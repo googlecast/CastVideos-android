@@ -130,7 +130,6 @@ public class LocalPlayerActivity extends AppCompatActivity {
         setupControlsCallbacks();
         setupCastListener();
         mCastContext = CastContext.getSharedInstance(this);
-        mCastContext.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
         mCastSession = mCastContext.getSessionManager().getCurrentCastSession();
         // see what we need to play and where
         Bundle bundle = getIntent().getExtras();

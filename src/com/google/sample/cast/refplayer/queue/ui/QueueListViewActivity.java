@@ -166,7 +166,6 @@ public class QueueListViewActivity extends AppCompatActivity {
         setupActionBar();
         mEmptyView = findViewById(R.id.empty);
         mCastContext = CastContext.getSharedInstance(this);
-        mCastContext.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
     }
 
 

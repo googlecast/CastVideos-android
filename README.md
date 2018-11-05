@@ -7,7 +7,7 @@ CastVideos-android application shows how to cast videos from an android device i
 Here is the list of other reference apps:
 * [iOS Sender: CastVideos-ios](https://github.com/googlecast/CastVideos-ios)
 * [Chrome Sender: CastVideos-chrome](https://github.com/googlecast/CastVideos-chrome)
-* [Receiver: Cast-Player-Sample](https://github.com/googlecast/Cast-Player-Sample)
+* [CAF Receiver: BasicReceiverCAF](https://github.com/googlecast/BasicReceiverCAF)
 
 ## Dependencies
 * Android Query library: https://github.com/androidquery/androidquery
@@ -24,17 +24,20 @@ to have your own ID.
    to register an app id. If you want to use your own receiver (which is required if you need to debug the receiver),
     update "app_id" in that file with your own app id.
 
-## References and How to report bugs
-* [Cast Developer Documentation](http://developers.google.com/cast/)
-* [Design Checklist](http://developers.google.com/cast/docs/design_checklist)
-* If you find any issues with this library, please open a bug here on GitHub
-* Question are answered on [StackOverflow](http://stackoverflow.com/questions/tagged/google-cast)
+## References
+* Developer Guides: https://developers.google.com/cast/docs/developers
+* Cast APIs: https://developers.google.com/cast/docs/reference/android/packages
+* Design Checklist: http://developers.google.com/cast/docs/design_checklist
+
+## How to report bugs
+* For Cast SDK issues: https://developers.google.com/cast/docs/support
+* For sample apps issues, please open a bug here on GitHub
 
 ## How to make contributions?
 Please read and follow the steps in the CONTRIBUTING.md
 
 ## License
-See LICENSE
+See [LICENSE](LICENSE)
 
 ## Terms
 Your use of this sample is subject to, and by using or downloading the sample files you agree to comply with, the [Google APIs Terms of Service](https://developers.google.com/terms/) and the [Google Cast SDK Additional Developer Terms of Service](https://developers.google.com/cast/docs/terms/).

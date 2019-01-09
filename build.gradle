@@ -28,6 +28,7 @@ android {
         versionCode 20
         versionName "3.0"
         applicationId="com.google.sample.cast.refplayer"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     dexOptions {
         javaMaxHeapSize "4g"
@@ -35,10 +36,15 @@ android {
 
     lintOptions.abortOnError false
 
-    sourceSets.main {
-        manifest.srcFile 'AndroidManifest.xml'
-        java.srcDirs = ['src']
-        res.srcDirs = ['res']
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+        }
+        androidTest {
+            java.srcDirs = ['androidTest']
+        }
     }
 }
 
@@ -48,4 +54,10 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.google.android.gms:play-services-cast-framework:16.1.2'
     implementation 'com.android.volley:volley:1.1.1'
+
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test:rules:1.1.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    testImplementation 'junit:junit:4.12'
 }

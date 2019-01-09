@@ -25,6 +25,8 @@ android {
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 27
+        versionCode 20
+        versionName "3.0"
         applicationId="com.google.sample.cast.refplayer"
     }
     dexOptions {

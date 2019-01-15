@@ -33,7 +33,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.graphics.Point;
-import android.support.v7.widget.PopupMenu;
+import androidx.appcompat.widget.PopupMenu;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;

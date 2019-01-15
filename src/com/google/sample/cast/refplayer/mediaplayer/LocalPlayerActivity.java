@@ -16,6 +16,8 @@
 
 package com.google.sample.cast.refplayer.mediaplayer;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.framework.CastButtonFactory;
@@ -24,14 +26,13 @@ import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.gms.cast.framework.media.MediaUtils;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
+import com.google.sample.cast.refplayer.utils.CustomVolleyRequest;
 import com.google.sample.cast.refplayer.R;
 import com.google.sample.cast.refplayer.browser.VideoProvider;
 import com.google.sample.cast.refplayer.expandedcontrols.ExpandedControlsActivity;
 import com.google.sample.cast.refplayer.queue.ui.QueueListViewActivity;
 import com.google.sample.cast.refplayer.settings.CastPreference;
 import com.google.sample.cast.refplayer.utils.Utils;
-
-import com.androidquery.AQuery;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -45,11 +46,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -88,14 +89,13 @@ public class LocalPlayerActivity extends AppCompatActivity {
     private ProgressBar mLoading;
     private View mControllers;
     private View mContainer;
-    private ImageView mCoverArt;
+    private NetworkImageView mCoverArt;
     private Timer mSeekbarTimer;
     private Timer mControllersTimer;
     private PlaybackLocation mLocation;
     private PlaybackState mPlaybackState;
     private final Handler mHandler = new Handler();
     private final float mAspectRatio = 72f / 128;
-    private AQuery mAquery;
     private MediaInfo mSelectedMedia;
     private boolean mControllersVisible;
     private int mDuration;
@@ -105,6 +105,7 @@ public class LocalPlayerActivity extends AppCompatActivity {
     private CastSession mCastSession;
     private SessionManagerListener<CastSession> mSessionManagerListener;
     private MenuItem mQueueMenuItem;
+    private ImageLoader mImageLoader;
 
     /**
      * indicates whether we are doing a local or a remote playback
@@ -125,7 +126,6 @@ public class LocalPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.player_activity);
-        mAquery = new AQuery(this);
         loadViews();
         setupControlsCallbacks();
         setupCastListener();
@@ -368,7 +368,11 @@ public class LocalPlayerActivity extends AppCompatActivity {
 
     private void setCoverArtStatus(String url) {
         if (url != null) {
-            mAquery.id(mCoverArt).image(url);
+            mImageLoader = CustomVolleyRequest.getInstance(this.getApplicationContext())
+                    .getImageLoader();
+            mImageLoader.get(url, ImageLoader.getImageListener(mCoverArt, 0, 0));
+            mCoverArt.setImageUrl(url, mImageLoader);
+
             mCoverArt.setVisibility(View.VISIBLE);
             mVideoView.setVisibility(View.INVISIBLE);
         } else {
@@ -770,7 +774,7 @@ public class LocalPlayerActivity extends AppCompatActivity {
         mLoading = (ProgressBar) findViewById(R.id.progressBar1);
         mControllers = findViewById(R.id.controllers);
         mContainer = findViewById(R.id.container);
-        mCoverArt = (ImageView) findViewById(R.id.coverArtView);
+        mCoverArt = (NetworkImageView) findViewById(R.id.coverArtView);
         ViewCompat.setTransitionName(mCoverArt, getString(R.string.transition_image));
         mPlayCircle = (ImageButton) findViewById(R.id.play_circle);
         mPlayCircle.setOnClickListener(new OnClickListener() {

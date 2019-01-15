@@ -19,7 +19,7 @@ package com.google.sample.cast.refplayer.browser;
 import com.google.android.gms.cast.MediaInfo;
 
 import android.content.Context;
-import android.support.v4.content.AsyncTaskLoader;
+import androidx.loader.content.AsyncTaskLoader;
 import android.util.Log;
 
 import java.util.List;

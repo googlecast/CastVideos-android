@@ -16,22 +16,23 @@
 
 package com.google.sample.cast.refplayer.browser;
 
-import com.google.android.gms.cast.MediaInfo;
-import com.google.android.gms.cast.MediaMetadata;
-import com.google.android.gms.cast.framework.CastContext;
-import com.google.android.gms.cast.framework.CastSession;
-import com.google.sample.cast.refplayer.R;
-
-import com.androidquery.AQuery;
-
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+import com.google.android.gms.cast.MediaInfo;
+import com.google.android.gms.cast.MediaMetadata;
+import com.google.android.gms.cast.framework.CastContext;
+import com.google.android.gms.cast.framework.CastSession;
+import com.google.sample.cast.refplayer.utils.CustomVolleyRequest;
+import com.google.sample.cast.refplayer.R;
 
 import java.util.List;
 
@@ -63,7 +64,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.View
         MediaMetadata mm = item.getMetadata();
         viewHolder.setTitle(mm.getString(MediaMetadata.KEY_TITLE));
         viewHolder.setDescription(mm.getString(MediaMetadata.KEY_SUBTITLE));
-        viewHolder.setImage(mm.getImages().get(0).getUrl().toString());
+        viewHolder.setImage(mm.getImages().get(0).getUrl().toString(), mAppContext);
 
         viewHolder.mMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +97,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.View
     }
 
     /**
-     * A {@link android.support.v7.widget.RecyclerView.ViewHolder} that displays a single video in
+     * A {@link RecyclerView.ViewHolder} that displays a single video in
      * the video list.
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -104,24 +105,22 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.View
         private final View mParent;
         private final View mMenu;
         private final View mTextContainer;
-        private AQuery mAquery;
         private TextView mTitleView;
         private TextView mDescriptionView;
-        private ImageView mImgView;
+        private NetworkImageView mImgView;
+        private ImageLoader mImageLoader;
 
         public static ViewHolder newInstance(View parent) {
-            ImageView imgView = (ImageView) parent.findViewById(R.id.imageView1);
+            NetworkImageView imgView = (NetworkImageView) parent.findViewById(R.id.imageView1);
             TextView titleView = (TextView) parent.findViewById(R.id.textView1);
             TextView descriptionView = (TextView) parent.findViewById(R.id.textView2);
             View menu = parent.findViewById(R.id.menu);
             View textContainer = parent.findViewById(R.id.text_container);
-            AQuery aQuery = new AQuery(parent);
-            return new ViewHolder(parent, imgView, textContainer, titleView, descriptionView, menu,
-                    aQuery);
+            return new ViewHolder(parent, imgView, textContainer, titleView, descriptionView, menu);
         }
 
-        private ViewHolder(View parent, ImageView imgView, View textContainer, TextView titleView,
-                TextView descriptionView, View menu, AQuery aQuery) {
+        private ViewHolder(View parent, NetworkImageView imgView, View textContainer, TextView titleView,
+                TextView descriptionView, View menu) {
             super(parent);
             mParent = parent;
             mImgView = imgView;
@@ -129,7 +128,6 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.View
             mMenu = menu;
             mTitleView = titleView;
             mDescriptionView = descriptionView;
-            mAquery = aQuery;
         }
 
         public void setTitle(String title) {
@@ -140,9 +138,12 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.View
             mDescriptionView.setText(description);
         }
 
-        public void setImage(String imgUrl) {
-            mAquery.id(mImgView).width(114).image(imgUrl,
-                    true, true, 0, R.drawable.default_video, null, 0, ASPECT_RATIO);
+        public void setImage(String imgUrl, Context context) {
+            mImageLoader = CustomVolleyRequest.getInstance(context)
+                    .getImageLoader();
+
+            mImageLoader.get(imgUrl, ImageLoader.getImageListener(mImgView, 0, 0));
+            mImgView.setImageUrl(imgUrl, mImageLoader);
         }
 
         public void setOnClickListener(View.OnClickListener listener) {

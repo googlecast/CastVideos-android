@@ -16,12 +16,12 @@
 package com.google.sample.cast.refplayer.queue.ui;
 
 import android.graphics.Canvas;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.ItemTouchHelper;
 
 /**
- * An implementation of the {@link android.support.v7.widget.helper.ItemTouchHelper.Callback}.
+ * An implementation of the {@link androidx.recyclerview.widget.ItemTouchHelper.Callback}.
  */
 public class QueueItemTouchHelperCallback extends ItemTouchHelper.Callback {
 

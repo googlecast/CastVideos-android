@@ -16,6 +16,8 @@
 
 package com.google.sample.cast.refplayer.queue.ui;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.MediaQueueItem;
@@ -23,16 +25,15 @@ import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
+import com.google.sample.cast.refplayer.utils.CustomVolleyRequest;
 import com.google.sample.cast.refplayer.R;
 import com.google.sample.cast.refplayer.queue.QueueDataProvider;
 
-import com.androidquery.AQuery;
-
 import android.content.Context;
-import android.support.annotation.IntDef;
-import android.support.v4.view.MotionEventCompat;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import androidx.annotation.IntDef;
+import androidx.core.view.MotionEventCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -63,6 +64,7 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
     private View.OnClickListener mItemViewOnClickListener;
     private static final float ASPECT_RATIO = 1f;
     private EventListener mEventListener;
+    private ImageLoader mImageLoader;
 
     public QueueListAdapter(Context context, OnStartDragListener dragStartListener) {
         mAppContext = context.getApplicationContext();
@@ -139,11 +141,14 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
         MediaMetadata metaData = info.getMetadata();
         holder.mTitleView.setText(metaData.getString(MediaMetadata.KEY_TITLE));
         holder.mDescriptionView.setText(metaData.getString(MediaMetadata.KEY_SUBTITLE));
-        AQuery aq = new AQuery(holder.itemView);
         if (!metaData.getImages().isEmpty()) {
-            aq.id(holder.mImageView).width(IMAGE_THUMBNAIL_WIDTH)
-                    .image(metaData.getImages().get(0).getUrl().toString(), true, true, 0,
-                            R.drawable.default_video, null, 0, ASPECT_RATIO);
+
+            String url = metaData.getImages().get(0).getUrl().toString();
+            mImageLoader = CustomVolleyRequest.getInstance(mAppContext)
+                    .getImageLoader();
+            mImageLoader.get(url, ImageLoader.getImageListener(holder.mImageView, 0, 0));
+            holder.mImageView.setImageUrl(url, mImageLoader);
+
         }
 
         holder.mDragHandle.setOnTouchListener(new View.OnTouchListener() {
@@ -204,7 +209,7 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
         private View mUpcomingControls;
         private ImageButton mPlayUpcoming;
         private ImageButton mStopUpcoming;
-        public ImageView mImageView;
+        public NetworkImageView mImageView;
         public ViewGroup mContainer;
         public ImageView mDragHandle;
         public TextView mTitleView;
@@ -237,7 +242,7 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
             mDragHandle = (ImageView) itemView.findViewById(R.id.drag_handle);
             mTitleView = (TextView) itemView.findViewById(R.id.textView1);
             mDescriptionView = (TextView) itemView.findViewById(R.id.textView2);
-            mImageView = (ImageView) itemView.findViewById(R.id.imageView1);
+            mImageView = (NetworkImageView) itemView.findViewById(R.id.imageView1);
             mPlayPause = (ImageButton) itemView.findViewById(R.id.play_pause);
             mControls = itemView.findViewById(R.id.controls);
             mUpcomingControls = itemView.findViewById(R.id.controls_upcoming);
@@ -296,7 +301,7 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
 
     /**
      * Interface to notify an item ViewHolder of relevant callbacks from {@link
-     * android.support.v7.widget.helper.ItemTouchHelper.Callback}.
+     * androidx.recyclerview.widget.ItemTouchHelper.Callback}.
      */
     public interface ItemTouchHelperViewHolder {
 

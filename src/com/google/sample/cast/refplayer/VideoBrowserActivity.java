@@ -29,10 +29,10 @@ import com.google.sample.cast.refplayer.settings.CastPreference;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;

@@ -19,6 +19,7 @@ package com.google.sample.cast.refplayer.mediaplayer;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.cast.MediaInfo;
+import com.google.android.gms.cast.MediaLoadOptions;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
@@ -335,35 +336,18 @@ public class LocalPlayerActivity extends AppCompatActivity {
         if (remoteMediaClient == null) {
             return;
         }
-        remoteMediaClient.addListener(new RemoteMediaClient.Listener() {
+        remoteMediaClient.registerCallback(new RemoteMediaClient.Callback() {
             @Override
             public void onStatusUpdated() {
                 Intent intent = new Intent(LocalPlayerActivity.this, ExpandedControlsActivity.class);
                 startActivity(intent);
-                remoteMediaClient.removeListener(this);
-            }
-
-            @Override
-            public void onMetadataUpdated() {
-            }
-
-            @Override
-            public void onQueueStatusUpdated() {
-            }
-
-            @Override
-            public void onPreloadStatusUpdated() {
-            }
-
-            @Override
-            public void onSendingRemoteMediaRequest() {
-            }
-
-            @Override
-            public void onAdBreakStatusUpdated() {
+                remoteMediaClient.unregisterCallback(this);
             }
         });
-        remoteMediaClient.load(mSelectedMedia, autoPlay, position);
+        remoteMediaClient.load(mSelectedMedia,
+                new MediaLoadOptions.Builder()
+                        .setAutoplay(autoPlay)
+                        .setPlayPosition(position).build());
     }
 
     private void setCoverArtStatus(String url) {

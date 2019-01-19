@@ -50,8 +50,8 @@ public class QueueDataProvider {
     private final Object mLock = new Object();
     private final SessionManagerListener<CastSession> mSessionManagerListener =
             new MySessionManagerListener();
-    private final RemoteMediaClient.Listener mRemoteMediaClientListener =
-            new MyRemoteMediaClientListener();
+    private final RemoteMediaClient.Callback mRemoteMediaClientCallback =
+            new MyRemoteMediaClientCallback();
     private int mRepeatMode;
     private boolean mShuffle;
     private MediaQueueItem mCurrentIem;
@@ -213,7 +213,7 @@ public class QueueDataProvider {
     private void syncWithRemoteQueue() {
         RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
         if (remoteMediaClient != null) {
-            remoteMediaClient.addListener(mRemoteMediaClientListener);
+            remoteMediaClient.registerCallback(mRemoteMediaClientCallback);
             MediaStatus mediaStatus = remoteMediaClient.getMediaStatus();
             if (mediaStatus != null) {
                 List<MediaQueueItem> items = mediaStatus.getQueueItems();
@@ -274,7 +274,7 @@ public class QueueDataProvider {
         }
     }
 
-    private class MyRemoteMediaClientListener implements RemoteMediaClient.Listener {
+    private class MyRemoteMediaClientCallback extends RemoteMediaClient.Callback {
 
         @Override
         public void onPreloadStatusUpdated() {
@@ -308,18 +308,6 @@ public class QueueDataProvider {
             if (mListener != null) {
                 mListener.onQueueDataChanged();
             }
-        }
-
-        @Override
-        public void onMetadataUpdated() {
-        }
-
-        @Override
-        public void onSendingRemoteMediaRequest() {
-        }
-
-        @Override
-        public void onAdBreakStatusUpdated() {
         }
 
         private void updateMediaQueue() {

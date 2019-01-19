@@ -48,8 +48,8 @@ public class QueueListViewActivity extends AppCompatActivity {
     private static final String FRAGMENT_LIST_VIEW = "list view";
     private static final String TAG = "QueueListViewActivity";
 
-    private final RemoteMediaClient.Listener mRemoteMediaClientListener =
-            new MyRemoteMediaClientListener();
+    private final RemoteMediaClient.Callback mRemoteMediaClientCallback =
+            new MyRemoteMediaClientCallback();
     private final SessionManagerListener<CastSession> mSessionManagerListener =
             new MySessionManagerListener();
     private CastContext mCastContext;
@@ -61,7 +61,7 @@ public class QueueListViewActivity extends AppCompatActivity {
         @Override
         public void onSessionEnded(CastSession session, int error) {
             if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.removeListener(mRemoteMediaClientListener);
+                mRemoteMediaClient.registerCallback(mRemoteMediaClientCallback);
             }
             mRemoteMediaClient = null;
             mEmptyView.setVisibility(View.VISIBLE);
@@ -71,7 +71,7 @@ public class QueueListViewActivity extends AppCompatActivity {
         public void onSessionResumed(CastSession session, boolean wasSuspended) {
             mRemoteMediaClient = getRemoteMediaClient();
             if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.addListener(mRemoteMediaClientListener);
+                mRemoteMediaClient.registerCallback(mRemoteMediaClientCallback);
             }
         }
 
@@ -79,7 +79,7 @@ public class QueueListViewActivity extends AppCompatActivity {
         public void onSessionStarted(CastSession session, String sessionId) {
             mRemoteMediaClient = getRemoteMediaClient();
             if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.addListener(mRemoteMediaClientListener);
+                mRemoteMediaClient.registerCallback(mRemoteMediaClientCallback);
             }
         }
 
@@ -106,14 +106,13 @@ public class QueueListViewActivity extends AppCompatActivity {
         @Override
         public void onSessionSuspended(CastSession session, int reason) {
             if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.removeListener(mRemoteMediaClientListener);
+                mRemoteMediaClient.unregisterCallback(mRemoteMediaClientCallback);
             }
             mRemoteMediaClient = null;
         }
     }
 
-    private class MyRemoteMediaClientListener implements RemoteMediaClient.Listener {
-
+    private class MyRemoteMediaClientCallback extends RemoteMediaClient.Callback {
         @Override
         public void onStatusUpdated() {
             updateMediaQueue();
@@ -122,22 +121,6 @@ public class QueueListViewActivity extends AppCompatActivity {
         @Override
         public void onQueueStatusUpdated() {
             updateMediaQueue();
-        }
-
-        @Override
-        public void onMetadataUpdated() {
-        }
-
-        @Override
-        public void onPreloadStatusUpdated() {
-        }
-
-        @Override
-        public void onSendingRemoteMediaRequest() {
-        }
-
-        @Override
-        public void onAdBreakStatusUpdated() {
         }
 
         private void updateMediaQueue() {
@@ -179,7 +162,7 @@ public class QueueListViewActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         if (mRemoteMediaClient != null) {
-            mRemoteMediaClient.removeListener(mRemoteMediaClientListener);
+            mRemoteMediaClient.unregisterCallback(mRemoteMediaClientCallback);
         }
         mCastContext.getSessionManager().removeSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
@@ -225,7 +208,7 @@ public class QueueListViewActivity extends AppCompatActivity {
             mRemoteMediaClient = getRemoteMediaClient();
         }
         if (mRemoteMediaClient != null) {
-            mRemoteMediaClient.addListener(mRemoteMediaClientListener);
+            mRemoteMediaClient.registerCallback(mRemoteMediaClientCallback);
             MediaStatus mediaStatus = mRemoteMediaClient.getMediaStatus();
             List<MediaQueueItem> queueItems =
                     (mediaStatus == null) ? null : mediaStatus.getQueueItems();

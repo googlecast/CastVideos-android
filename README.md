@@ -10,7 +10,7 @@ Here is the list of other reference apps:
 * [CAF Receiver: CastReceiver](https://github.com/googlecast/CastReceiver)
 
 ## Dependencies
-* Android Query library: https://github.com/androidquery/androidquery
+* Android Volley library: https://github.com/google/volley
 
 ## Setup Instructions
 * Get a Chromecast device and set it up
@@ -23,6 +23,23 @@ to have your own ID.
 * This sample includes a published app id in the res/values/strings.xml file so the project can be built and run without a need
    to register an app id. If you want to use your own receiver (which is required if you need to debug the receiver),
     update "app_id" in that file with your own app id.
+
+## Automated UI Testing on Cast Sender App
+This Google Cast demo app also includes sample Cast test cases in [androidTest/](androidTest/com/google/sample/cast/refplayer/).
+It is recommended to implement and run automated testing for your Android sender app to ensure the best Cast experience for users.
+
+#### How to run test cases
+* Update `cast_test_target_device` in [res/values/cast_test.xml] with your Chromecast device name
+* Connect to a physical Android device and make sure your device is unlocked
+* Follow [Espresso setup instructions](https://developer.android.com/training/testing/espresso/setup#set-up-environment) to turn off system animations under **Settings > Developer options**
+* In Android Studio, click the **Sync Project with Gradle Files** button
+* Go to [CastTestSuite.java](androidTest/com/google/sample/cast/refplayer/CastTestSuite.java), right click and **Run 'CastTestSuite'** or right click to run single test case (ex: [testCastingVideo()](androidTest/com/google/sample/cast/refplayer/BasicCastUITest.java))
+* \[Optional\] Adjust timeout setting in [res/values/cast_test.xml] if necessary
+
+#### UI testing frameworks
+* Espresso: https://developer.android.com/training/testing/espresso/
+* UI Automator: https://developer.android.com/training/testing/ui-automator
+* **Note: The UI Automator framework requires Android 4.3 (API level 18) or higher.**
 
 ## Documentation
 * [Google Cast Android Sender Overview](https://developers.google.com/cast/docs/android_sender/)

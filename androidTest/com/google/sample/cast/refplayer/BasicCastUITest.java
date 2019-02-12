@@ -1,14 +1,24 @@
+/*
+ * Copyright (C) 2019 Google LLC. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.sample.cast.refplayer;
 
-import android.content.Context;
 import android.content.res.Resources;
-import android.os.SystemClock;
 
 import com.google.android.gms.cast.MediaStatus;
-import com.google.android.gms.cast.framework.CastContext;
-import com.google.android.gms.cast.framework.CastSession;
-import com.google.android.gms.cast.framework.SessionManager;
-import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,13 +28,11 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.TimeUnit;
 
 import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.appcompat.widget.ButtonBarLayout;
 import androidx.appcompat.widget.Toolbar;
 import androidx.mediarouter.app.MediaRouteButton;
-import androidx.test.espresso.action.ViewActions;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.UiSelector;
@@ -34,49 +42,40 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
-import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
-import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
-@RunWith(AndroidJUnit4.class)
+/**
+ * To test basic Cast Widgets
+ */
+@RunWith(AndroidJUnit4ClassRunner.class)
 public class BasicCastUITest {
 
-    private static final String TARGET_DEVICE = "Living Room TV";
-    private static final String VIDEO_WITH_SUBTITLES = "Casting To The Future";
-    private static final String VIDEO_WITHOUT_SUBTITLES = "Big Buck Bunny";
-    private static final long SHORT_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(2);
-    private static final long MAX_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
+    private static Resources resources =
+            InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
+    private static final String VIDEO_TITLE =
+            resources.getString(R.string.cast_test_video_1);
+    private static final long SHORT_TIMEOUT_MS =
+            TimeUnit.SECONDS.toMillis(resources.getInteger(R.integer.cast_test_short_timeout));
+    private static final long MAX_TIMEOUT_MS =
+            TimeUnit.SECONDS.toMillis(resources.getInteger(R.integer.cast_test_max_timeout));
 
-    private Context mTragetContext;
-    private CastContext mCastContext;
-    private CastSession mCastSession;
-    private SessionManager mSessionManager;
-    private RemoteMediaClient mRemoteMediaClient;
-    private MediaStatus mMediaStatus;
     private UiDevice mDevice;
-    private boolean isCastConnected;
-    private int actualState;
+    private TestUtils mTestUtils = new TestUtils();
 
     @Rule
     public ActivityTestRule<VideoBrowserActivity> mActivityRule =
             new ActivityTestRule<>(VideoBrowserActivity.class);
 
     @Before
-    public void initState() throws InterruptedException {
-        mTragetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    public void initState() {
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
     }
 
+    /**
+     * Test the cast icon is visible
+     */
     @Test
     public void testCastButtonDisplay() throws InterruptedException {
         // wait for cast button
@@ -86,58 +85,44 @@ public class BasicCastUITest {
                 .check(matches(isDisplayed()));
     }
 
+    /**
+     * Test connecting and disconnecting to Cast device
+     */
     @Test
     public void testCastConnect() throws InterruptedException, UiObjectNotFoundException {
-        connectToCastDevice();
-        disconnectFromCastDevice();
+        mTestUtils.connectToCastDevice();
+        mTestUtils.disconnectFromCastDevice();
     }
 
+    /**
+     * Test casting video content to receiver app
+     */
     @Test
     public void testCastingVideo() throws InterruptedException, UiObjectNotFoundException {
-        connectToCastDevice();
-        playCastContent(VIDEO_WITHOUT_SUBTITLES);
-        disconnectFromCastDevice();
+        mTestUtils.connectToCastDevice();
+        mTestUtils.playCastContent(VIDEO_TITLE);
+        mTestUtils.disconnectFromCastDevice();
     }
 
+    /**
+     * Verify the Expanded Controller is displayed
+     */
     @Test
-    public void testExpandedControllerWithVideo() throws InterruptedException, UiObjectNotFoundException {
-        connectToCastDevice();
-        playCastContent(VIDEO_WITHOUT_SUBTITLES);
-        verifyExpandedController();
-
-        onView(withId(R.id.button_play_pause_toggle))
-                .perform(click());
-        assertPlayerState(MediaStatus.PLAYER_STATE_PAUSED, MAX_TIMEOUT_MS);
-
-        onView(withId(R.id.button_play_pause_toggle))
-                .perform(click());
-        assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
-
-        disconnectFromCastDevice();
+    public void testExpandedController() throws InterruptedException, UiObjectNotFoundException {
+        mTestUtils.connectToCastDevice();
+        mTestUtils.playCastContent(VIDEO_TITLE);
+        mTestUtils.verifyExpandedController();
+        mTestUtils.disconnectFromCastDevice();
     }
 
-    private void verifyExpandedController() {
-        onView(withId(R.id.expanded_controller_layout))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.seek_bar))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.start_text))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.end_text))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.button_play_pause_toggle))
-                .check(matches(isDisplayed()));
-        onView(withContentDescription("Unmute"))
-                .check(matches(isDisplayed()));
-        onView(withContentDescription("Closed captions unavailable"))
-                .check(matches(isDisplayed()))
-                .check(matches(not(isEnabled())));
-    }
-
+    /**
+     * Verify the Mini Controller is displayed
+     * Click the Mini Controller and verify the Expanded Controller is displayed
+     */
     @Test
-    public void testMiniControllerWithVideo() throws InterruptedException, UiObjectNotFoundException {
-        connectToCastDevice();
-        playCastContent(VIDEO_WITHOUT_SUBTITLES);
+    public void testMiniController() throws InterruptedException, UiObjectNotFoundException {
+        mTestUtils.connectToCastDevice();
+        mTestUtils.playCastContent(VIDEO_TITLE);
 
         // click to close expanded controller
         onView(allOf(
@@ -147,167 +132,46 @@ public class BasicCastUITest {
                 .check(matches(isDisplayed()))
                 .perform(click());
 
-        verifyMiniControllerWithVideo();
+        mTestUtils.verifyMiniController();
 
         onView(withId(R.id.cast_mini_controller))
                 .perform(click());
 
-        verifyExpandedController();
+        mTestUtils.verifyExpandedController();
 
-        disconnectFromCastDevice();
+        mTestUtils.disconnectFromCastDevice();
     }
 
-    private void verifyMiniControllerWithVideo() {
-        onView(withId(R.id.cast_mini_controller))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.icon_view))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.title_view))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.subtitle_view))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.button_2))   // play_pause_button
-                .check(matches(isDisplayed()));
-    }
-
+    /**
+     * Navigate away from the sender app and open the notification
+     * Media control should display on notification
+     * Click the notification widget and verify the Expanded Controller is displayed
+     */
     @Test
-    public void testCaptionControl() throws InterruptedException, UiObjectNotFoundException {
-        connectToCastDevice();
+    public void testNotification() throws UiObjectNotFoundException, InterruptedException {
+        mTestUtils.connectToCastDevice();
+        mTestUtils.playCastContent(VIDEO_TITLE);
+        mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
 
-        playCastContent(VIDEO_WITH_SUBTITLES);
+        mDevice.pressHome();
+        mDevice.openNotification();
 
-        getCastInfo();
-        assertNull(mMediaStatus.getActiveTrackIds());
+        mDevice.findObject(new UiSelector()
+                .className("android.widget.ImageButton")
+                .resourceId("android:id/action0").description("Pause")).click();
+        mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PAUSED, MAX_TIMEOUT_MS);
 
-        // Click CC button and open SUBTITLES dialog
-        mDevice.findObject(new UiSelector().description("Closed captions")).click();
-        assertTrue(mDevice.findObject(new UiSelector().textMatches("SUBTITLES")).exists());
+        mDevice.findObject(new UiSelector()
+                .className("android.widget.ImageButton")
+                .resourceId("android:id/action0").description("Play")).click();
+        mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
 
-        // Select subtitle and close SUBTITLES dialog
-        mDevice.findObject(new UiSelector().text("English Subtitle")
-                .fromParent(new UiSelector().resourceId(getResourceName(R.id.radio)))).click();
-        mDevice.findObject(new UiSelector().text("OK")).click();
-        assertFalse(mDevice.findObject(new UiSelector().textMatches("SUBTITLES")).exists());
+        mDevice.findObject(new UiSelector()
+                .className("android.widget.TextView")
+                .resourceId("android:id/title").text(VIDEO_TITLE)).click();
+        mTestUtils.verifyExpandedController();
 
-        // Assert subtitle is activated
-        assertNotNull(mMediaStatus.getActiveTrackIds());
-
-        onView(isRoot()).perform(ViewActions.pressBack());
-
-        disconnectFromCastDevice();
-    }
-
-    private String getResourceName(int resourceId) {
-        Resources resources = InstrumentationRegistry.getInstrumentation()
-                .getTargetContext().getResources();
-
-        return resources.getResourceName(resourceId);
-    }
-
-    private void connectToCastDevice() throws InterruptedException, UiObjectNotFoundException {
-        // wait for cast button ready
-        Thread.sleep(SHORT_TIMEOUT_MS);
-
-        getCastInfo();
-        if (isCastConnected) {
-            disconnectFromCastDevice();
-        }
-
-        onView(isAssignableFrom(MediaRouteButton.class))
-                .perform(click());
-
-        onView(withId(R.id.action_bar_root))
-                .check(matches(isDisplayed()));
-
-        // wait for device chooser list
-        Thread.sleep(SHORT_TIMEOUT_MS);
-
-        mDevice.findObject(new UiSelector().text(TARGET_DEVICE)).click();
-
-        assertCastStateIsConnected(MAX_TIMEOUT_MS);
-    }
-
-    private void disconnectFromCastDevice() throws InterruptedException {
-        onView(isAssignableFrom(MediaRouteButton.class))
-                .check(matches(isDisplayed()))
-                .perform(click());
-
-        Thread.sleep(2000);
-
-        onView(allOf(
-                withText("Stop casting")
-                , withParent(isAssignableFrom(ButtonBarLayout.class))
-        )).check(matches(isDisplayed())).perform(click());
-    }
-
-    private void playCastContent(String videoTitle) throws UiObjectNotFoundException, InterruptedException {
-        mDevice.findObject(new UiSelector().text(videoTitle)).click();
-        mDevice.findObject(
-                new UiSelector().resourceId(getResourceName(R.id.play_circle))).click();
-        mDevice.findObject(new UiSelector().text("Play Now")).click();
-        assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
-    }
-
-    private void getCastInfo() {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        mCastContext = CastContext.getSharedInstance(mTragetContext);
-                        mSessionManager = mCastContext.getSessionManager();
-                        mCastSession = mSessionManager.getCurrentCastSession();
-                        if (mCastSession != null) {
-                            mRemoteMediaClient = mCastSession.getRemoteMediaClient();
-                            isCastConnected = mCastSession.isConnected();
-                            if (mRemoteMediaClient != null) {
-                                mMediaStatus = mRemoteMediaClient.getMediaStatus();
-                            }
-                        }
-                    }
-                }
-        );
-    }
-
-    private void assertCastStateIsConnected(long timeout) throws InterruptedException {
-        long startTime = SystemClock.uptimeMillis();
-        isCastConnected = false;
-
-        getCastInfo();
-
-        while (!isCastConnected && SystemClock.uptimeMillis() - startTime < timeout) {
-            Thread.sleep(500);
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            isCastConnected = mCastSession.isConnected();
-                        }
-                    }
-            );
-        }
-
-        assertTrue(isCastConnected);
-
-    }
-
-    private void assertPlayerState(int expectedState, long timeout) throws InterruptedException {
-        long startTime = SystemClock.uptimeMillis();
-        actualState = MediaStatus.PLAYER_STATE_UNKNOWN;
-
-        getCastInfo();
-
-        while (actualState != expectedState && SystemClock.uptimeMillis() - startTime < timeout) {
-            Thread.sleep(500);
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            actualState = mRemoteMediaClient.getPlayerState();
-                        }
-                    }
-            );
-        }
-
-        assertEquals(expectedState, actualState);
+        mDevice.pressBack();
+        mTestUtils.disconnectFromCastDevice();
     }
 }

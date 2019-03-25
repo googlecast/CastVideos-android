@@ -10,27 +10,24 @@ Please fill out either the individual or corporate Contributor License Agreement
 
   * If you are an individual writing original source code and you're sure you
     own the intellectual property, then you'll need to sign an [individual CLA]
-    (https://developers.google.com/open-source/cla/individual).
+    (https://cla.developers.google.com/about/google-individual).
   * If you work for a company that wants to allow you to contribute your work,
     then you'll need to sign a [corporate CLA]
-    (https://developers.google.com/open-source/cla/corporate).
+    (https://cla.developers.google.com/about/google-corporate).
 
 Follow either of the two links above to access the appropriate CLA and
 instructions for how to sign and return it. Once we receive it, we'll be able to
 accept your pull requests.
 
-## Contributing A Patch
+## Contributing a Patch
 
-1. Submit an issue describing your proposed change to the repo in question.
-1. The repo owner will respond to your issue promptly.
-1. If your proposed change is accepted, and you haven't already done so, sign a
-   Contributor License Agreement (see details above).
-1. Fork the desired repo, develop and test your code changes.
-1. Ensure that your code adheres to the existing style in the sample to which
-   you are contributing. Refer to the
-   [Google Cloud Platform Samples Style Guide]
-   (https://github.com/GoogleCloudPlatform/Template/wiki/style.html) for the
-   recommended coding standards for this organization.
-1. Ensure that your code has an appropriate set of unit tests which all pass.
+1. Sign a Contributor License Agreement, if you have not yet done so (see
+   details above).
+1. Create your change to the repo in question.
+    * Fork the desired repo, develop and test your code changes.
+    * Ensure that your code is clear and comprehensible.
+    * Ensure that your code has an appropriate set of unit tests which all pass.
 1. Submit a pull request.
-
+1. The repo owner will review your request. If it is approved, the change will
+   be merged. If it needs additional work, the repo owner will respond with
+   useful comments.

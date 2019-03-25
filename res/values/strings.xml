@@ -42,7 +42,7 @@
     <string name="failed_to_launch_app">Failed to launch application</string>
     <string name="failed_to_set_mute">Failed to adjust the volume mute</string>
     <string name="failed_to_find_app">The application you are trying to launch is not available on
-        your Chromecast device
+        your Google Cast device
     </string>
     <string name="failed_app_launch_timeout">The request to launch the application has timed out!
     </string>

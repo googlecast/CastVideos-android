@@ -252,7 +252,8 @@ class TestUtils {
         if (enabled) {
             assertNotNull(mMediaStatus.getActiveTrackIds());
         } else {
-            assertNull(mMediaStatus.getActiveTrackIds());
+            assertTrue(mMediaStatus.getActiveTrackIds() == null
+                    || mMediaStatus.getActiveTrackIds().length == 0);
         }
     }
 

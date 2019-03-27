@@ -90,15 +90,7 @@ public class QueueingTest {
                 .check(matches(isDisplayed()))
                 .check(matches(isEnabled()));
 
-        // Verify queue items (media status) in correct order
-        mDevice.pressBack();
-        onView(withId(R.id.action_show_queue))
-                .check(matches(isDisplayed())).perform(click());
-        mTestUtils.assertQueueOrder(VIDEO_ITEM_3, VIDEO_ITEM_1, VIDEO_ITEM_2);
-
-        // Open expanded controller and click to play next item
-        mDevice.pressBack();
-        onView(withId(R.id.cast_mini_controller)).perform(click());
+        // Click to play next item
         mDevice.findObject(new UiSelector().description("Skip to next item")).click();
         mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
 
@@ -109,6 +101,13 @@ public class QueueingTest {
                 .check(matches(isDisplayed()))
                 .check(matches(isEnabled()));
 
+        // Verify queue items (media status) in correct order
+        mDevice.pressBack();
+        onView(withId(R.id.action_show_queue))
+                .check(matches(isDisplayed())).perform(click());
+        mTestUtils.assertQueueOrder(VIDEO_ITEM_3, VIDEO_ITEM_1, VIDEO_ITEM_2);
+
+        mDevice.pressEnter();
         mTestUtils.disconnectFromCastDevice();
     }
 
@@ -127,7 +126,7 @@ public class QueueingTest {
         mDevice.findObject(new UiSelector().text(VIDEO_ITEM_2)).click();
         mDevice.findObject(
                 new UiSelector().resourceId(resources.getResourceName(R.id.play_circle))).click();
-        mDevice.findObject(new UiSelector().text("Add to Queue")).click();
+        mDevice.findObject(new UiSelector().text("Play Next")).click();
 
         mDevice.findObject(new UiSelector().description("Navigate up")).click();
 

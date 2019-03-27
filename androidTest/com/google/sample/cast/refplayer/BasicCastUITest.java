@@ -134,6 +134,7 @@ public class BasicCastUITest {
 
         mTestUtils.verifyMiniController();
 
+        mDevice.pressEnter();
         onView(withId(R.id.cast_mini_controller))
                 .perform(click());
 
@@ -172,6 +173,7 @@ public class BasicCastUITest {
         mTestUtils.verifyExpandedController();
 
         mDevice.pressBack();
+        mDevice.pressEnter();
         mTestUtils.disconnectFromCastDevice();
     }
 }

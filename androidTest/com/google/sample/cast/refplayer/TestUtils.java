@@ -211,9 +211,9 @@ class TestUtils {
      * Check the Expanded Controller UI
      */
     void verifyExpandedController() {
-        onView(withId(R.id.expanded_controller_layout))
+        onView(withId(R.id.controllers))
                 .check(matches(isDisplayed()));
-        onView(withId(R.id.seek_bar))
+        onView(withId(R.id.cast_seek_bar))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.start_text))
                 .check(matches(isDisplayed()));

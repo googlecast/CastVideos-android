@@ -132,7 +132,7 @@ public class PlaybackControlTest {
         mTestUtils.playCastContent(VIDEO_WITHOUT_SUBTITLES);
         mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
 
-        UiObject2 progressBar = mDevice.findObject(By.res(resources.getResourceName(R.id.seek_bar)));
+        UiObject2 progressBar = mDevice.findObject(By.res(resources.getResourceName(R.id.cast_seek_bar)));
         progressBar.scroll(Direction.LEFT, 0.75f, 500);
         mTestUtils.assertStreamPosition(0.75f);
 

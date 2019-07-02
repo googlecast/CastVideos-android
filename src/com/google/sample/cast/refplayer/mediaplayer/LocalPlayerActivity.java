@@ -19,7 +19,7 @@ package com.google.sample.cast.refplayer.mediaplayer;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.cast.MediaInfo;
-import com.google.android.gms.cast.MediaLoadOptions;
+import com.google.android.gms.cast.MediaLoadRequestData;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
@@ -344,10 +344,10 @@ public class LocalPlayerActivity extends AppCompatActivity {
                 remoteMediaClient.unregisterCallback(this);
             }
         });
-        remoteMediaClient.load(mSelectedMedia,
-                new MediaLoadOptions.Builder()
-                        .setAutoplay(autoPlay)
-                        .setPlayPosition(position).build());
+        remoteMediaClient.load(new MediaLoadRequestData.Builder()
+                .setMediaInfo(mSelectedMedia)
+                .setAutoplay(autoPlay)
+                .setCurrentTime(position).build());
     }
 
     private void setCoverArtStatus(String url) {

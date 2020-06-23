@@ -76,6 +76,7 @@ class TestUtils {
     private boolean isCastConnected;
     private int actualState;
 
+    private boolean isCastDisconnected;
     /**
      * Connecting to Cast device
      *  - Open Cast menu dialog when tapping the Cast icon
@@ -169,6 +170,28 @@ class TestUtils {
 
         assertTrue(isCastConnected);
 
+    }
+
+    /**
+     * Check Cast is Disconnected
+     */
+    protected void assertCastStateIsDisconnected(long timeout) throws Exception{
+        long startTime = SystemClock.uptimeMillis();
+        isCastDisconnected = false;
+        getCastInfo();
+
+        while(!isCastDisconnected && SystemClock.uptimeMillis() - startTime < timeout){
+            Thread.sleep(500);
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            isCastDisconnected = mCastSession.isDisconnected();
+                        }
+                    }
+            );
+        }
+        assertTrue(isCastDisconnected);
     }
 
     /**

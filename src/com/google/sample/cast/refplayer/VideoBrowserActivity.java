@@ -27,12 +27,14 @@ import com.google.sample.cast.refplayer.queue.ui.QueueListViewActivity;
 import com.google.sample.cast.refplayer.settings.CastPreference;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -127,6 +129,17 @@ public class VideoBrowserActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
     }
 
+    private void intentToJoin(){
+        Intent intent = getIntent();
+        Uri intentToJoinUri = Uri.parse("https://castvideos.com/cast/join");
+        Log.i(TAG, "URI passed: "+intentToJoinUri);
+
+        if (intent.getData() != null && intent.getData().equals(intentToJoinUri)) {
+            mCastContext.getSessionManager().startSession(intent);
+            Log.i(TAG, "Uri Joined: "+intentToJoinUri);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -169,6 +182,7 @@ public class VideoBrowserActivity extends AppCompatActivity {
         mCastContext.addCastStateListener(mCastStateListener);
         mCastContext.getSessionManager().addSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
+        intentToJoin();
         if (mCastSession == null) {
             mCastSession = CastContext.getSharedInstance(this).getSessionManager()
                     .getCurrentCastSession();

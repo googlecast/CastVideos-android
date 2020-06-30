@@ -33,9 +33,11 @@ import androidx.mediarouter.app.MediaRouteButton;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
+import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.UiSelector;
+import androidx.test.uiautomator.Until;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -60,6 +62,7 @@ public class BasicCastUITest {
             TimeUnit.SECONDS.toMillis(resources.getInteger(R.integer.cast_test_short_timeout));
     private static final long MAX_TIMEOUT_MS =
             TimeUnit.SECONDS.toMillis(resources.getInteger(R.integer.cast_test_max_timeout));
+    private static final String NOTIFICATION_TITLE = "Cast Videos Sample";
 
     private UiDevice mDevice;
     private TestUtils mTestUtils = new TestUtils();
@@ -156,20 +159,21 @@ public class BasicCastUITest {
 
         mDevice.pressHome();
         mDevice.openNotification();
+        mDevice.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)),MAX_TIMEOUT_MS);
 
         mDevice.findObject(new UiSelector()
                 .className("android.widget.ImageButton")
-                .resourceId("android:id/action0").description("Pause")).click();
+                .description("Pause"))
+                .click();
         mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PAUSED, MAX_TIMEOUT_MS);
 
         mDevice.findObject(new UiSelector()
                 .className("android.widget.ImageButton")
-                .resourceId("android:id/action0").description("Play")).click();
+                .description("Play"))
+                .click();
         mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
 
-        mDevice.findObject(new UiSelector()
-                .className("android.widget.TextView")
-                .resourceId("android:id/title").text(VIDEO_TITLE)).click();
+        mDevice.findObject(By.text(VIDEO_TITLE)).click();
         mTestUtils.verifyExpandedController();
 
         mDevice.pressBack();

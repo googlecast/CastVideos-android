@@ -19,6 +19,7 @@ package com.google.sample.cast.refplayer;
 import android.content.res.Resources;
 
 import com.google.android.gms.cast.MediaStatus;
+import com.google.sample.cast.refplayer.queue.ui.QueueListViewActivity;
 
 import org.json.JSONException;
 import org.junit.Before;
@@ -28,12 +29,15 @@ import org.junit.runner.RunWith;
 
 import java.util.concurrent.TimeUnit;
 
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
+import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.UiSelector;
+import androidx.test.uiautomator.Until;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -59,7 +63,8 @@ public class QueueingTest {
             resources.getString(R.string.cast_test_video_3);
     private static final long MAX_TIMEOUT_MS =
             TimeUnit.SECONDS.toMillis(resources.getInteger(R.integer.cast_test_max_timeout));
-
+    private static final String NOTIFICATION_TITLE = "Cast Videos Sample";
+    private static final int QUEUE_TEST_COUNT = 100;
     private UiDevice mDevice;
     private TestUtils mTestUtils = new TestUtils();
 
@@ -112,6 +117,63 @@ public class QueueingTest {
     }
 
     /**
+     * Tests Ending Session from the Notification
+     * @throws Exception
+     */
+    @Test
+    public void testEndSession() throws Exception{
+        mTestUtils.connectToCastDevice();
+        mDevice.findObject(new UiSelector().text(VIDEO_ITEM_1)).click();
+        mDevice.findObject(new UiSelector().resourceId(resources.getResourceName(R.id.play_circle))).click();
+        mDevice.findObject(new UiSelector().text("Play Now")).click();
+        mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
+
+        mDevice.pressHome();
+        mDevice.openNotification();
+        mDevice.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)),MAX_TIMEOUT_MS);
+        mDevice.findObject(new UiSelector().className("android.widget.ImageButton").description("Disconnect")).click();
+        mTestUtils.assertCastStateIsDisconnected(MAX_TIMEOUT_MS);
+    }
+
+    @Rule
+    public ActivityTestRule<QueueListViewActivity> mActivityTestRule =
+            new ActivityTestRule<>(QueueListViewActivity.class);
+
+    @Test
+    public void longQueueVerification() throws Exception{
+        mTestUtils.connectToCastDevice();
+        createLongQueue();
+        mDevice.findObject(new UiSelector().resourceId(resources.getResourceName(R.id.action_show_queue))).click();
+        onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.scrollToPosition(QUEUE_TEST_COUNT));
+        mDevice.findObject(new UiSelector().text(VIDEO_ITEM_2)).click();
+        mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
+
+        mDevice.openNotification();
+        mDevice.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)),MAX_TIMEOUT_MS);
+        mDevice.findObject(new UiSelector().className("android.widget.ImageButton").description("Disconnect")).click();
+
+        mTestUtils.assertCastStateIsDisconnected(MAX_TIMEOUT_MS);
+    }
+
+    private void createLongQueue() throws Exception{
+        int count = 0;
+        mDevice.findObject(new UiSelector().text(VIDEO_ITEM_1)).click();
+
+        while(count<QUEUE_TEST_COUNT){
+
+            mDevice.findObject(new UiSelector().resourceId(resources.getResourceName(R.id.play_circle))).click();
+            mDevice.findObject(new UiSelector().text("Add to Queue")).click();
+            count++;
+        }
+        mDevice.pressBack();
+        mDevice.findObject(new UiSelector().text(VIDEO_ITEM_2)).click();
+        mDevice.findObject(new UiSelector().resourceId(resources.getResourceName(R.id.play_circle))).click();
+        mDevice.findObject(new UiSelector().text("Add to Queue")).click();
+    }
+
+
+
+    /**
      * To add content and create queue
      */
     private void createQueue() throws UiObjectNotFoundException, InterruptedException {
@@ -137,3 +199,4 @@ public class QueueingTest {
         mTestUtils.assertPlayerState(MediaStatus.PLAYER_STATE_PLAYING, MAX_TIMEOUT_MS);
     }
 }
+

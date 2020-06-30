@@ -16,8 +16,8 @@
   -->
 <resources>
     <!-- For Testing -->
-    <string name="cast_test_target_device">Office TV</string>
-    <integer name="cast_test_short_timeout">3</integer>
+    <string name="cast_test_target_device">Den TV</string>
+    <integer name="cast_test_short_timeout">5</integer>
     <integer name="cast_test_max_timeout">20</integer>
     <string name="cast_test_video_1">Big Buck Bunny</string>
     <string name="cast_test_video_2">Casting To The Future</string>

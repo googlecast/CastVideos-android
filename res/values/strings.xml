@@ -17,7 +17,7 @@
 <resources>
 
     <string name="app_name">Cast Videos Sample</string>
-    <string name="app_id">4F8B3483</string>
+    <string name="app_id">CC1AD845</string>
     <string name="action_settings">Settings</string>
     <string name="cast_app_name">GoogleCastPlayer</string>
     <string name="media_route_menu_title">Play on&#8230;</string>
@@ -100,4 +100,5 @@
     <string name="action_clear_queue">Clear Queue</string>
     <string name="queue_item_added_to_play_next">An item was added to play next</string>
     <string name="queue_item_added_to_queue">An item was added to the queue</string>
+
 </resources>

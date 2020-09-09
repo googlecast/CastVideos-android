@@ -16,6 +16,7 @@
 
 package com.google.sample.cast.refplayer;
 
+import com.google.android.gms.cast.LaunchOptions;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.framework.CastOptions;
 import com.google.android.gms.cast.framework.OptionsProvider;
@@ -51,7 +52,12 @@ public class CastOptionsProvider implements OptionsProvider {
                 .setNotificationOptions(notificationOptions)
                 .setExpandedControllerActivityClassName(ExpandedControlsActivity.class.getName())
                 .build();
+        /** Following lines enable Cast Connect */
+        LaunchOptions launchOptions = new LaunchOptions.Builder()
+                .setAndroidReceiverCompatible(true)
+                .build();
         return new CastOptions.Builder()
+                .setLaunchOptions(launchOptions)
                 .setReceiverApplicationId(context.getString(R.string.app_id))
                 .setCastMediaOptions(mediaOptions)
                 .build();

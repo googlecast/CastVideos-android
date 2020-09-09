@@ -17,7 +17,7 @@
 <resources>
 
     <string name="app_name">Cast Videos Sample</string>
-    <string name="app_id">CC1AD845</string>
+    <string name="app_id">C0868879</string>
     <string name="action_settings">Settings</string>
     <string name="cast_app_name">GoogleCastPlayer</string>
     <string name="media_route_menu_title">Play on&#8230;</string>

@@ -52,7 +52,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.mediarouter:mediarouter:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
-    implementation 'com.google.android.gms:play-services-cast-framework:17.0.0'
+    implementation 'com.google.android.gms:play-services-cast-framework:19.0.0'
     implementation 'com.android.volley:volley:1.1.1'
 
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

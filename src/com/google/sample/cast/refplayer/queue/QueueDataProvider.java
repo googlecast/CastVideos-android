@@ -16,19 +16,16 @@
 
 package com.google.sample.cast.refplayer.queue;
 
-import com.google.android.gms.cast.MediaQueueItem;
-import com.google.android.gms.cast.MediaStatus;
-import com.google.android.gms.cast.framework.CastContext;
-import com.google.android.gms.cast.framework.CastSession;
-import com.google.android.gms.cast.framework.SessionManagerListener;
-import com.google.android.gms.cast.framework.media.RemoteMediaClient;
-
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import com.google.android.gms.cast.MediaQueueItem;
+import com.google.android.gms.cast.framework.CastContext;
+import com.google.android.gms.cast.framework.CastSession;
+import com.google.android.gms.cast.framework.SessionManagerListener;
+import com.google.android.gms.cast.framework.media.MediaQueue;
+import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 
 /**
  * A singleton to manage the queue. Upon instantiation, it syncs up its own copy of the queue with
@@ -44,7 +41,6 @@ public class QueueDataProvider {
     private static final String TAG = "QueueDataProvider";
     public static final int INVALID = -1;
     private final Context mAppContext;
-    private final List<MediaQueueItem> mQueue = new CopyOnWriteArrayList<>();
     private static QueueDataProvider mInstance;
     // Locks modification to the remove queue.
     private final Object mLock = new Object();
@@ -52,21 +48,21 @@ public class QueueDataProvider {
             new MySessionManagerListener();
     private final RemoteMediaClient.Callback mRemoteMediaClientCallback =
             new MyRemoteMediaClientCallback();
-    private int mRepeatMode;
-    private boolean mShuffle;
-    private MediaQueueItem mCurrentIem;
+    private MediaQueueItem mCurrentItem;
     private MediaQueueItem mUpcomingItem;
     private OnQueueDataChangedListener mListener;
     private boolean mDetachedQueue = true;
 
     private QueueDataProvider(Context context) {
         mAppContext = context.getApplicationContext();
-        mRepeatMode = MediaStatus.REPEAT_MODE_REPEAT_OFF;
-        mShuffle = false;
-        mCurrentIem = null;
+        mCurrentItem = null;
         CastContext.getSharedInstance(mAppContext).getSessionManager().addSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
-        syncWithRemoteQueue();
+        MediaQueue queue = getMediaQueue();
+        if (queue != null) {
+            queue.setCacheCapacity(30);
+        }
+        registerQueueCallbackAndUpdateQueue();
     }
 
     public void onUpcomingStopClicked(View view, MediaQueueItem upcomingItem) {
@@ -80,7 +76,7 @@ public class QueueDataProvider {
         int position = getPositionByItemId(upcomingItem.getItemId());
         int[] itemIds = new int[getCount() - position];
         for (int i = 0; i < itemIds.length; i++) {
-            itemIds[i] = mQueue.get(i + position).getItemId();
+            itemIds[i] = getMediaQueue().getItemAtIndex(i + position).getItemId();
         }
         remoteMediaClient.queueRemoveItems(itemIds, null);
     }
@@ -97,12 +93,20 @@ public class QueueDataProvider {
         return mDetachedQueue;
     }
 
+    public MediaQueue getMediaQueue() {
+        MediaQueue queue = getRemoteMediaClient() == null ?
+                 null :
+                 getRemoteMediaClient().getMediaQueue();
+        return queue;
+    }
+
     public int getPositionByItemId(int itemId) {
-        if (mQueue.isEmpty()) {
+        if (getMediaQueue() == null || getMediaQueue().getItemIds() == null) {
             return INVALID;
         }
-        for (int i = 0; i < mQueue.size(); i++) {
-            if (mQueue.get(i).getItemId() == itemId) {
+        int[] ids = getMediaQueue().getItemIds();
+        for (int i = 0 ; i < ids.length; i++) {
+            if (ids[i] == itemId) {
                 return i;
             }
         }
@@ -118,29 +122,32 @@ public class QueueDataProvider {
 
     public void removeFromQueue(int position) {
         synchronized (mLock) {
-            RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
-            if (remoteMediaClient == null) {
+            MediaQueue queue = getMediaQueue();
+            if (queue == null) {
                 return;
             }
-            remoteMediaClient.queueRemoveItem(mQueue.get(position).getItemId(), null);
+            MediaQueueItem item = queue.getItemAtIndex(position);
+            RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
+            if (item != null && remoteMediaClient != null) {
+                getRemoteMediaClient().queueRemoveItem(item.getItemId(), null);
+            }
         }
     }
 
     public void removeAll() {
         synchronized (mLock) {
-            if (mQueue.isEmpty()) {
-                return;
-            }
             RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
             if (remoteMediaClient == null) {
                 return;
             }
-            int[] itemIds = new int[mQueue.size()];
-            for (int i = 0; i < mQueue.size(); i++) {
-                itemIds[i] = mQueue.get(i).getItemId();
+            MediaQueue queue = getMediaQueue();
+            if (queue == null) {
+                return;
             }
-            remoteMediaClient.queueRemoveItems(itemIds, null);
-            mQueue.clear();
+            int[] ids  = queue.getItemIds();
+            if (ids != null && ids.length > 0) {
+                remoteMediaClient.queueRemoveItems(ids, null);
+            }
         }
     }
 
@@ -152,54 +159,69 @@ public class QueueDataProvider {
         if (remoteMediaClient == null) {
             return;
         }
-        int itemId = mQueue.get(fromPosition).getItemId();
-
+        MediaQueue queue = getMediaQueue();
+        if (queue == null) {
+            return;
+        }
+        int itemId = queue.itemIdAtIndex(fromPosition);
         remoteMediaClient.queueMoveItemToNewIndex(itemId, toPosition, null);
-        final MediaQueueItem item = mQueue.remove(fromPosition);
-        mQueue.add(toPosition, item);
     }
 
     public int getCount() {
-        return mQueue.size();
+        MediaQueue queue = getMediaQueue();
+        if (queue == null) {
+            return 0;
+        }
+        return queue.getItemCount();
     }
 
     public MediaQueueItem getItem(int position) {
-        return mQueue.get(position);
+        MediaQueue queue = getMediaQueue();
+        if (queue == null) {
+            return null;
+        }
+        return queue.getItemAtIndex(position,true);
     }
 
-    public void clearQueue() {
-        mQueue.clear();
+    public void destroyQueue() {
+        removeAll();
         mDetachedQueue = true;
-        mCurrentIem = null;
+        mCurrentItem = null;
+        mUpcomingItem = null;
     }
 
-    public int getRepeatMode() {
-        return mRepeatMode;
-    }
+    public boolean isCurrentItem(MediaQueueItem item) {
+        if (item != null
+                && mCurrentItem != null
+                && (item == mCurrentItem
+                || item.getItemId() == mCurrentItem.getItemId())) {
+            return true;
+        }
 
-    public boolean isShuffleOn() {
-        return mShuffle;
-    }
-
-    public MediaQueueItem getCurrentItem() {
-        return mCurrentIem;
+        return false;
     }
 
     public int getCurrentItemId() {
-        return mCurrentIem.getItemId();
+        return mCurrentItem == null ? -1 : mCurrentItem.getItemId();
     }
 
     public MediaQueueItem getUpcomingItem() {
-        Log.d(TAG, "[upcoming] getUpcomingItem() returning " + mUpcomingItem);
         return mUpcomingItem;
+    }
+
+    public boolean isUpcomingItem(MediaQueueItem item) {
+        if (item != null
+                && mUpcomingItem != null
+                && (item == mUpcomingItem
+                    || item.getItemId() == mUpcomingItem.getItemId())) {
+            return true;
+        }
+
+        return false;
     }
 
     public void setOnQueueDataChangedListener(OnQueueDataChangedListener listener) {
         mListener = listener;
-    }
-
-    public List<MediaQueueItem> getItems() {
-        return mQueue;
     }
 
     /**
@@ -210,40 +232,52 @@ public class QueueDataProvider {
         void onQueueDataChanged();
     }
 
-    private void syncWithRemoteQueue() {
+    private void registerQueueCallbackAndUpdateQueue() {
         RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
         if (remoteMediaClient != null) {
             remoteMediaClient.registerCallback(mRemoteMediaClientCallback);
-            MediaStatus mediaStatus = remoteMediaClient.getMediaStatus();
-            if (mediaStatus != null) {
-                List<MediaQueueItem> items = mediaStatus.getQueueItems();
-                if (items != null && !items.isEmpty()) {
-                    mQueue.clear();
-                    mQueue.addAll(items);
-                    mRepeatMode = mediaStatus.getQueueRepeatMode();
-                    mCurrentIem = mediaStatus.getQueueItemById(mediaStatus.getCurrentItemId());
-                    mDetachedQueue = false;
-                    mUpcomingItem = mediaStatus.getQueueItemById(mediaStatus.getPreloadedItemId());
-                }
-            }
+            updateMediaQueue();
         }
+    }
+
+    private void updateMediaQueue() {
+        Log.d(TAG, "updateMediaQueue ");
+        RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
+        mDetachedQueue = true;
+        if (remoteMediaClient != null) {
+            mCurrentItem = remoteMediaClient.getCurrentItem();
+            mUpcomingItem = remoteMediaClient.getPreloadedItem();
+            mDetachedQueue = false;
+            Log.d(TAG, "updateMediaQueue() with mCurrentItem=" + mCurrentItem);
+            Log.d(TAG, "updateMediaQueue() with mUpcomingItem=" + mUpcomingItem);
+        }
+    }
+
+    private RemoteMediaClient getRemoteMediaClient() {
+        CastSession castSession = CastContext.getSharedInstance(mAppContext).getSessionManager()
+                .getCurrentCastSession();
+        if (castSession == null || !castSession.isConnected()) {
+            Log.w(TAG, "Trying to get a RemoteMediaClient when no CastSession is started.");
+            return null;
+        }
+        return castSession.getRemoteMediaClient();
     }
 
     private class MySessionManagerListener implements SessionManagerListener<CastSession> {
 
         @Override
         public void onSessionResumed(CastSession session, boolean wasSuspended) {
-            syncWithRemoteQueue();
+            registerQueueCallbackAndUpdateQueue();
         }
 
         @Override
         public void onSessionStarted(CastSession session, String sessionId) {
-            syncWithRemoteQueue();
+            registerQueueCallbackAndUpdateQueue();
         }
 
         @Override
         public void onSessionEnded(CastSession session, int error) {
-            clearQueue();
+            destroyQueue();
             if (mListener != null) {
                 mListener.onQueueDataChanged();
             }
@@ -275,22 +309,14 @@ public class QueueDataProvider {
     }
 
     private class MyRemoteMediaClientCallback extends RemoteMediaClient.Callback {
-
+        
         @Override
         public void onPreloadStatusUpdated() {
-            RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
-            if (remoteMediaClient == null) {
-                return;
-            }
-            MediaStatus mediaStatus = remoteMediaClient.getMediaStatus();
-            if (mediaStatus == null) {
-                return;
-            }
-            mUpcomingItem = mediaStatus.getQueueItemById(mediaStatus.getPreloadedItemId());
-            Log.d(TAG, "onRemoteMediaPreloadStatusUpdated() with item=" + mUpcomingItem);
+            updateMediaQueue();
             if (mListener != null) {
                 mListener.onQueueDataChanged();
             }
+            Log.d(TAG, "onPreloadStatusUpdated Queue was updated");
         }
 
         @Override
@@ -299,7 +325,7 @@ public class QueueDataProvider {
             if (mListener != null) {
                 mListener.onQueueDataChanged();
             }
-            Log.d(TAG, "Queue was updated");
+            Log.d(TAG, "onQueueStatusUpdated Queue was updated");
         }
 
         @Override
@@ -308,42 +334,7 @@ public class QueueDataProvider {
             if (mListener != null) {
                 mListener.onQueueDataChanged();
             }
+            Log.d(TAG, "onStatusUpdated Queue was updated");
         }
-
-        private void updateMediaQueue() {
-            RemoteMediaClient remoteMediaClient = getRemoteMediaClient();
-            MediaStatus mediaStatus;
-            List<MediaQueueItem> queueItems = null;
-            if (remoteMediaClient != null) {
-                mediaStatus = remoteMediaClient.getMediaStatus();
-                if (mediaStatus != null) {
-                    queueItems = mediaStatus.getQueueItems();
-                    mRepeatMode = mediaStatus.getQueueRepeatMode();
-                    mCurrentIem = mediaStatus.getQueueItemById(mediaStatus.getCurrentItemId());
-                }
-            }
-            mQueue.clear();
-            if (queueItems == null) {
-                Log.d(TAG, "Queue is cleared");
-            } else {
-                Log.d(TAG, "Queue is updated with a list of size: " + queueItems.size());
-                if (queueItems.size() > 0) {
-                    mQueue.addAll(queueItems);
-                    mDetachedQueue = false;
-                } else {
-                    mDetachedQueue = true;
-                }
-            }
-        }
-    }
-
-    private RemoteMediaClient getRemoteMediaClient() {
-        CastSession castSession = CastContext.getSharedInstance(mAppContext).getSessionManager()
-                .getCurrentCastSession();
-        if (castSession == null || !castSession.isConnected()) {
-            Log.w(TAG, "Trying to get a RemoteMediaClient when no CastSession is started.");
-            return null;
-        }
-        return castSession.getRemoteMediaClient();
     }
 }

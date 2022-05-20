@@ -34,7 +34,7 @@
     <string name="version">CastVideos: %1$s</string>
     <string name="session_reconnection_attempt">Attempting to recover previous
         session&#8230;</string>
-    <string name="introducing_cast">Introducting Cast</string>
+    <string name="introducing_cast">Introducing Cast</string>
 
     <!-- Error messages -->
     <!-- onApplicationConnectionFailed() errors -->

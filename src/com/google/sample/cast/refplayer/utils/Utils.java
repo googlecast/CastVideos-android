@@ -185,41 +185,35 @@ public class Utils {
                         true).setPreloadTime(PRELOAD_TIME_S).build();
                 MediaQueueItem[] newItemArray = new MediaQueueItem[]{queueItem};
                 String toastMessage = null;
-                if (provider.isQueueDetached() && provider.getCount() > 0) {
-                    if ((menuItem.getItemId() == R.id.action_play_now)
-                            || (menuItem.getItemId() == R.id.action_add_to_queue)) {
-                        MediaQueueItem[] items = Utils
-                                .rebuildQueueAndAppend(provider.getItems(), queueItem);
-                        remoteMediaClient.queueLoad(items, provider.getCount(),
-                                MediaStatus.REPEAT_MODE_REPEAT_OFF, null);
+                if (provider.getCount() == 0) {
+                    remoteMediaClient.queueLoad(newItemArray, 0,
+                            MediaStatus.REPEAT_MODE_REPEAT_OFF, null);
+                } else {
+                    int currentId = provider.getCurrentItemId();
+                    if (menuItem.getItemId() == R.id.action_play_now) {
+                        remoteMediaClient.queueInsertAndPlayItem(queueItem, currentId, null);
+                    } else if (menuItem.getItemId() == R.id.action_play_next) {
+                        int currentPosition = provider.getPositionByItemId(currentId);
+                        if (currentPosition == provider.getCount() - 1) {
+                            //we are adding to the end of queue
+                            remoteMediaClient.queueAppendItem(queueItem, null);
+                        } else {
+                            MediaQueueItem nextItem = provider.getItem(currentPosition + 1);
+                            if (nextItem != null) {
+                                int nextItemId = nextItem.getItemId();
+                                remoteMediaClient.queueInsertItems(newItemArray, nextItemId, null);
+                            } else {
+                                //remote queue is not ready with item; try again.
+                                return false;
+                            }
+                        }
+                        toastMessage = context.getString(
+                                    R.string.queue_item_added_to_play_next);
+                    } else if (menuItem.getItemId() == R.id.action_add_to_queue) {
+                        remoteMediaClient.queueAppendItem(queueItem, null);
+                        toastMessage = context.getString(R.string.queue_item_added_to_queue);
                     } else {
                         return false;
-                    }
-                } else {
-                    if (provider.getCount() == 0) {
-                        remoteMediaClient.queueLoad(newItemArray, 0,
-                                MediaStatus.REPEAT_MODE_REPEAT_OFF, null);
-                    } else {
-                        int currentId = provider.getCurrentItemId();
-                        if (menuItem.getItemId() == R.id.action_play_now) {
-                            remoteMediaClient.queueInsertAndPlayItem(queueItem, currentId, null);
-                        } else if (menuItem.getItemId() == R.id.action_play_next) {
-                            int currentPosition = provider.getPositionByItemId(currentId);
-                            if (currentPosition == provider.getCount() - 1) {
-                                //we are adding to the end of queue
-                                remoteMediaClient.queueAppendItem(queueItem, null);
-                            } else {
-                                int nextItemId = provider.getItem(currentPosition + 1).getItemId();
-                                remoteMediaClient.queueInsertItems(newItemArray, nextItemId, null);
-                            }
-                            toastMessage = context.getString(
-                                    R.string.queue_item_added_to_play_next);
-                        } else if (menuItem.getItemId() == R.id.action_add_to_queue) {
-                            remoteMediaClient.queueAppendItem(queueItem, null);
-                            toastMessage = context.getString(R.string.queue_item_added_to_queue);
-                        } else {
-                            return false;
-                        }
                     }
                 }
                 if (menuItem.getItemId() == R.id.action_play_now) {

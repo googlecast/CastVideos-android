@@ -20,7 +20,10 @@
     style="@style/commonListItemStyle"
     android:foreground="?selectableItemBackground"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="@dimen/list_item_max_height"
+    android:paddingBottom="4dp"
+    android:paddingLeft="8dp"
+    android:paddingTop="4dp">
     <View android:layout_width="match_parent" android:layout_height="match_parent"
           android:background="@drawable/bg_swipe_item_right" />
 
@@ -34,8 +37,8 @@
             android:id="@+id/drag_handle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:layout_marginRight="@dimen/queue_drag_margin_right"
             android:src="@drawable/ic_drag_updown_grey_24dp" />
 
@@ -53,8 +56,8 @@
                 android:layout_centerVertical="true"
                 android:layout_marginRight="16dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:visibility="gone"
-                android:src="@drawable/ic_play_arrow_grey600_48dp" />
+                android:src="@drawable/ic_play_arrow_grey600_48dp"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/controls_upcoming"
@@ -86,35 +89,51 @@
 
         </RelativeLayout>
 
-        <com.android.volley.toolbox.NetworkImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/imageViewLayout"
+            android:layout_width="@dimen/list_item_image_max_width"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_alignParentTop="true"
-            android:src="@drawable/default_video" />
+            android:layout_centerVertical="true">
+
+            <android.widget.ProgressBar
+                android:id="@+id/item_progress"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:visibility="visible" />
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/imageView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:src="@drawable/default_video" />
+
+        </RelativeLayout>
+
 
         <LinearLayout
             android:id="@+id/text_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/controls"
-            android:layout_marginRight="5dp"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/imageView1"
-            android:orientation="vertical" >
+            android:layout_marginRight="5dp"
+            android:layout_toLeftOf="@+id/controls"
+            android:layout_toRightOf="@+id/imageViewLayout"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/textView1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
+                android:fontFamily="sans-serif"
                 android:maxLines="1"
-                android:text="First Line"
-                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:fontFamily="sans-serif" />
+                android:text=""
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
 
             <TextView
                 android:id="@+id/textView2"
@@ -122,9 +141,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Second Line"
                 android:fontFamily="sans-serif-light"
+                android:maxLines="1"
+                android:text=""
                 android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
         </LinearLayout>
 

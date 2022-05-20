@@ -16,14 +16,13 @@
 package com.google.sample.cast.refplayer.queue.ui;
 
 import com.google.android.gms.cast.MediaQueueItem;
-import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
+import com.google.android.gms.cast.framework.media.MediaQueue;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 import com.google.sample.cast.refplayer.R;
 import com.google.sample.cast.refplayer.expandedcontrols.ExpandedControlsActivity;
 import com.google.sample.cast.refplayer.queue.QueueDataProvider;
-import com.google.sample.cast.refplayer.utils.Utils;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -68,7 +67,7 @@ public class QueueListViewFragment extends Fragment
         RecyclerView recyclerView = (RecyclerView) getView().findViewById(R.id.recycler_view);
         mProvider = QueueDataProvider.getInstance(getContext());
 
-        QueueListAdapter adapter = new QueueListAdapter(getActivity(), this);
+        QueueListAdapter adapter = new QueueListAdapter(mProvider.getMediaQueue(),getActivity(), this);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -102,6 +101,13 @@ public class QueueListViewFragment extends Fragment
                 }
             }
         });
+
+        mProvider.setOnQueueDataChangedListener(new QueueDataProvider.OnQueueDataChangedListener() {
+            @Override
+            public void onQueueDataChanged() {
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     private void onPlayPauseClicked(View view) {
@@ -117,29 +123,20 @@ public class QueueListViewFragment extends Fragment
             return;
         }
         MediaQueueItem item = (MediaQueueItem) view.getTag(R.string.queue_tag_item);
-        if (mProvider.isQueueDetached()) {
-            Log.d(TAG, "Is detached: itemId = " + item.getItemId());
-
-            int currentPosition = mProvider.getPositionByItemId(item.getItemId());
-            MediaQueueItem[] items = Utils.rebuildQueue(mProvider.getItems());
-            remoteMediaClient.queueLoad(items, currentPosition,
-                    MediaStatus.REPEAT_MODE_REPEAT_OFF, null);
-        } else {
-            int currentItemId = mProvider.getCurrentItemId();
-            if (currentItemId == item.getItemId()) {
-                // We selected the one that is currently playing so we take the user to the
-                // full screen controller
-                CastSession castSession = CastContext.getSharedInstance(
-                        getContext().getApplicationContext())
-                        .getSessionManager().getCurrentCastSession();
-                if (castSession != null) {
-                    Intent intent = new Intent(getActivity(), ExpandedControlsActivity.class);
-                    startActivity(intent);
-                }
-            } else {
-                // a different item in the queue was selected so we jump there
-                remoteMediaClient.queueJumpToItem(item.getItemId(), null);
+        int currentItemId = mProvider.getCurrentItemId();
+        if (currentItemId == item.getItemId()) {
+            // We selected the one that is currently playing so we take the user to the
+            // full screen controller
+            CastSession castSession = CastContext.getSharedInstance(
+                    getContext().getApplicationContext())
+                    .getSessionManager().getCurrentCastSession();
+            if (castSession != null) {
+                Intent intent = new Intent(getActivity(), ExpandedControlsActivity.class);
+                startActivity(intent);
             }
+        } else {
+            // a different item in the queue was selected so we jump there
+            remoteMediaClient.queueJumpToItem(item.getItemId(), null);
         }
     }
 

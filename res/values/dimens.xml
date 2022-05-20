@@ -22,7 +22,8 @@
 
     <!-- ShowCaseView -->
     <dimen name="showcase_radius">47dp</dimen>
-
+    <dimen name="list_item_max_height">110dp</dimen>
+    <dimen name="list_item_image_max_width">160dp</dimen>
     <dimen name="list_item_translation_z">2dp</dimen>
     <dimen name="queue_drag_margin_right">12dp</dimen>
     <dimen name="browse_row_popup_menu_margin_right">10dp</dimen>

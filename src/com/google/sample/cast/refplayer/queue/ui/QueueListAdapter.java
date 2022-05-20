@@ -16,6 +16,24 @@
 
 package com.google.sample.cast.refplayer.queue.ui;
 
+import android.content.Context;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.core.view.MotionEventCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.cast.MediaInfo;
@@ -24,58 +42,40 @@ import com.google.android.gms.cast.MediaQueueItem;
 import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
+import com.google.android.gms.cast.framework.media.MediaQueue;
+import com.google.android.gms.cast.framework.media.MediaQueueRecyclerViewAdapter;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
-import com.google.sample.cast.refplayer.utils.CustomVolleyRequest;
+import com.google.android.gms.common.images.WebImage;
 import com.google.sample.cast.refplayer.R;
 import com.google.sample.cast.refplayer.queue.QueueDataProvider;
-
-import android.content.Context;
-import androidx.annotation.IntDef;
-import androidx.core.view.MotionEventCompat;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
+import com.google.sample.cast.refplayer.utils.CustomVolleyRequest;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /**
  * An adapter to show the list of queue items.
  */
-public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.QueueItemViewHolder>
-        implements QueueItemTouchHelperCallback.ItemTouchHelperAdapter {
-
+public class QueueListAdapter extends MediaQueueRecyclerViewAdapter<QueueListAdapter.QueueItemViewHolder> implements QueueItemTouchHelperCallback.ItemTouchHelperAdapter {
     private static final String TAG = "QueueListAdapter";
-    private static final int IMAGE_THUMBNAIL_WIDTH = 64;
-    private final QueueDataProvider mProvider;
     private static final int PLAY_RESOURCE = R.drawable.ic_play_arrow_grey600_48dp;
     private static final int PAUSE_RESOURCE = R.drawable.ic_pause_grey600_48dp;
     private static final int DRAG_HANDLER_DARK_RESOURCE = R.drawable.ic_drag_updown_grey_24dp;
     private static final int DRAG_HANDLER_LIGHT_RESOURCE = R.drawable.ic_drag_updown_white_24dp;
     private final Context mAppContext;
-    private final OnStartDragListener mDragStartListener;
+    private final QueueDataProvider mProvider;
+    private final QueueListAdapter.OnStartDragListener mDragStartListener;
     private View.OnClickListener mItemViewOnClickListener;
-    private static final float ASPECT_RATIO = 1f;
-    private EventListener mEventListener;
+    private QueueListAdapter.EventListener mEventListener;
     private ImageLoader mImageLoader;
+    private final ListAdapterMediaQueueCallback myMediaQueueCallback = new ListAdapterMediaQueueCallback();
 
-    public QueueListAdapter(Context context, OnStartDragListener dragStartListener) {
+    public QueueListAdapter(@NonNull MediaQueue mediaQueue, @NonNull Context context, QueueListAdapter.OnStartDragListener dragStartListener) {
+        super(mediaQueue);
         mAppContext = context.getApplicationContext();
-        mDragStartListener = dragStartListener;
         mProvider = QueueDataProvider.getInstance(context);
-        mProvider.setOnQueueDataChangedListener(new QueueDataProvider.OnQueueDataChangedListener() {
-            @Override
-            public void onQueueDataChanged() {
-                notifyDataSetChanged();
-            }
-        });
+        mDragStartListener = dragStartListener;
         mItemViewOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -86,18 +86,108 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
                 onItemViewClick(view);
             }
         };
-        setHasStableIds(true);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return (long) mProvider.getItem(position).getItemId();
+        getMediaQueue().registerCallback(myMediaQueueCallback);
+        setHasStableIds(false);
     }
 
     private void onItemViewClick(View view) {
         if (mEventListener != null) {
             mEventListener.onItemViewClicked(view);
         }
+    }
+
+    @NonNull
+    @Override
+    public QueueItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        final View view = inflater.inflate(R.layout.queue_row, parent, false);
+        return new QueueListAdapter.QueueItemViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull QueueItemViewHolder holder, int position) {
+        Log.d(TAG, "[upcoming] onBindViewHolder() for position: " + position);
+        holder.setIsRecyclable(false);
+        MediaQueueItem item = this.getItem(position);
+        if (item == null) {
+            holder.updateControlsStatus(QueueListAdapter.QueueItemViewHolder.NONE);
+        } else if (mProvider.isCurrentItem(item)) {
+            holder.updateControlsStatus(QueueListAdapter.QueueItemViewHolder.CURRENT);
+            updatePlayPauseButtonImageResource(holder.mPlayPause);
+        } else if (mProvider.isUpcomingItem(item)) {
+            holder.updateControlsStatus(QueueListAdapter.QueueItemViewHolder.UPCOMING);
+        } else {
+            holder.updateControlsStatus(QueueListAdapter.QueueItemViewHolder.NONE);
+        }
+
+        holder.mContainer.setTag(R.string.queue_tag_item, item);
+        holder.mPlayPause.setTag(R.string.queue_tag_item, item);
+        holder.mPlayUpcoming.setTag(R.string.queue_tag_item, item);
+        holder.mStopUpcoming.setTag(R.string.queue_tag_item, item);
+
+        // Set listeners
+        holder.mContainer.setOnClickListener(mItemViewOnClickListener);
+        holder.mPlayPause.setOnClickListener(mItemViewOnClickListener);
+        holder.mPlayUpcoming.setOnClickListener(mItemViewOnClickListener);
+        holder.mStopUpcoming.setOnClickListener(mItemViewOnClickListener);
+
+        MediaInfo info = item != null ? item.getMedia() : null;
+        String imageUrl = null;
+        if (info != null && info.getMetadata() != null) {
+            MediaMetadata metaData = info.getMetadata();
+            holder.mTitleView.setText(metaData.getString(MediaMetadata.KEY_TITLE));
+            holder.mDescriptionView.setText(metaData.getString(MediaMetadata.KEY_SUBTITLE));
+            List<WebImage> images = metaData.getImages();
+            if (images != null && !images.isEmpty()) {
+                imageUrl = images.get(0).getUrl().toString();
+           }
+        } else {
+            holder.mTitleView.setText(null);
+            holder.mDescriptionView.setText(null);
+        }
+
+        if (imageUrl != null) {
+            mImageLoader = CustomVolleyRequest.getInstance(mAppContext).getImageLoader();
+            ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    holder.mProgressLoading.setVisibility(View.GONE);
+                    holder.mImageView.setErrorImageResId(R.drawable.ic_action_alerts_and_states_warning);
+                }
+                @Override
+                public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                    if (response.getBitmap() != null) {
+                        holder.mProgressLoading.setVisibility(View.GONE);
+                        holder.mImageView.setImageBitmap(response.getBitmap());
+                    }
+                }
+            };
+            holder.mImageView.setImageUrl(mImageLoader.get(imageUrl, imageListener).getRequestUrl(), mImageLoader);
+        } else {
+            holder.mProgressLoading.postDelayed( new Runnable() {
+                @Override
+                public void run() {
+                    holder.mProgressLoading.setVisibility(View.GONE);
+                    holder.mImageView.setDefaultImageResId(R.drawable.cast_album_art_placeholder);
+                    holder.mImageView.setImageResource(R.drawable.cast_album_art_placeholder);
+                }
+            },3000);
+        }
+
+        holder.mDragHandle.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                    mDragStartListener.onStartDrag(holder);
+                } else if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_BUTTON_RELEASE) {
+                    view.clearFocus();
+                    view.clearAnimation();
+                    holder.setIsRecyclable(false);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -116,61 +206,17 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
     }
 
     @Override
-    public QueueItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        final View view = inflater.inflate(R.layout.queue_row, parent, false);
-        return new QueueItemViewHolder(view);
+    public void dispose() {
+        super.dispose();
+        //unregister callback
+        MediaQueue queue = getMediaQueue();
+        if (queue != null) {
+            queue.unregisterCallback(myMediaQueueCallback);
+        }
     }
 
-    @Override
-    public void onBindViewHolder(final QueueItemViewHolder holder, int position) {
-        Log.d(TAG, "[upcoming] onBindViewHolder() for position: " + position);
-        final MediaQueueItem item = mProvider.getItem(position);
-        holder.mContainer.setTag(R.string.queue_tag_item, item);
-        holder.mPlayPause.setTag(R.string.queue_tag_item, item);
-        holder.mPlayUpcoming.setTag(R.string.queue_tag_item, item);
-        holder.mStopUpcoming.setTag(R.string.queue_tag_item, item);
-
-        // Set listeners
-        holder.mContainer.setOnClickListener(mItemViewOnClickListener);
-        holder.mPlayPause.setOnClickListener(mItemViewOnClickListener);
-        holder.mPlayUpcoming.setOnClickListener(mItemViewOnClickListener);
-        holder.mStopUpcoming.setOnClickListener(mItemViewOnClickListener);
-
-        MediaInfo info = item.getMedia();
-        MediaMetadata metaData = info.getMetadata();
-        holder.mTitleView.setText(metaData.getString(MediaMetadata.KEY_TITLE));
-        holder.mDescriptionView.setText(metaData.getString(MediaMetadata.KEY_SUBTITLE));
-        if (!metaData.getImages().isEmpty()) {
-
-            String url = metaData.getImages().get(0).getUrl().toString();
-            mImageLoader = CustomVolleyRequest.getInstance(mAppContext)
-                    .getImageLoader();
-            mImageLoader.get(url, ImageLoader.getImageListener(holder.mImageView, 0, 0));
-            holder.mImageView.setImageUrl(url, mImageLoader);
-
-        }
-
-        holder.mDragHandle.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
-                    mDragStartListener.onStartDrag(holder);
-                }
-                return false;
-            }
-        });
-
-        if (item == mProvider.getCurrentItem()) {
-            holder.updateControlsStatus(QueueItemViewHolder.CURRENT);
-            updatePlayPauseButtonImageResource(holder.mPlayPause);
-        } else if (item == mProvider.getUpcomingItem()) {
-            holder.updateControlsStatus(QueueItemViewHolder.UPCOMING);
-        } else {
-            holder.updateControlsStatus(QueueItemViewHolder.NONE);
-            holder.mPlayPause.setVisibility(View.GONE);
-        }
-
+    public void setEventListener(QueueListAdapter.EventListener eventListener) {
+        mEventListener = eventListener;
     }
 
     private void updatePlayPauseButtonImageResource(ImageButton button) {
@@ -182,6 +228,7 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
             button.setVisibility(View.GONE);
             return;
         }
+
         int status = remoteMediaClient.getPlayerState();
         switch (status) {
             case MediaStatus.PLAYER_STATE_PLAYING:
@@ -195,13 +242,47 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return QueueDataProvider.getInstance(mAppContext).getCount();
+    /**
+     * Handles ListAdapter notification upon MediaQueue data changes.
+     * */
+    class ListAdapterMediaQueueCallback extends MediaQueue.Callback{
+        @Override
+        public void itemsInsertedInRange(int start, int end) {
+            notifyItemRangeInserted(start, end);
+        }
+
+        @Override
+        public void itemsReloaded() {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void itemsRemovedAtIndexes(@NonNull int[] ints) {
+            for (int i : ints) {
+                notifyItemRemoved(i);
+            }
+        }
+
+        @Override
+        public void itemsReorderedAtIndexes(@NonNull List<Integer> list, int i) {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void itemsUpdatedAtIndexes(@NonNull int[] ints) {
+            for (int i : ints) {
+                notifyItemChanged(i);
+            }
+        }
+
+        @Override
+        public void mediaQueueChanged() {
+            notifyDataSetChanged();
+        }
     }
 
-    /* package */ static class QueueItemViewHolder extends RecyclerView.ViewHolder implements
-            ItemTouchHelperViewHolder {
+    static class QueueItemViewHolder extends RecyclerView.ViewHolder implements
+            QueueListAdapter.ItemTouchHelperViewHolder {
 
         private Context mContext;
         private final ImageButton mPlayPause;
@@ -214,6 +295,7 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
         public ImageView mDragHandle;
         public TextView mTitleView;
         public TextView mDescriptionView;
+        public ProgressBar mProgressLoading;
 
         @Override
         public void onItemSelected() {
@@ -248,13 +330,15 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
             mUpcomingControls = itemView.findViewById(R.id.controls_upcoming);
             mPlayUpcoming = (ImageButton) itemView.findViewById(R.id.play_upcoming);
             mStopUpcoming = (ImageButton) itemView.findViewById(R.id.stop_upcoming);
+            mProgressLoading = (ProgressBar)itemView.findViewById(R.id.item_progress);
         }
 
-        private void updateControlsStatus(@ControlStatus int status) {
+        private void updateControlsStatus(@QueueListAdapter.QueueItemViewHolder.ControlStatus int status) {
             int bgResId = R.drawable.bg_item_normal_state;
             mTitleView.setTextAppearance(mContext, R.style.Base_TextAppearance_AppCompat_Subhead);
             mDescriptionView.setTextAppearance(mContext,
                     R.style.Base_TextAppearance_AppCompat_Caption);
+            Log.d(TAG,"updateControlsStatus for status = "+status);
             switch (status) {
                 case CURRENT:
                     bgResId = R.drawable.bg_item_normal_state;
@@ -284,13 +368,9 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
                     break;
             }
             mContainer.setBackgroundResource(bgResId);
+            super.itemView.requestLayout();
         }
     }
-
-    public void setEventListener(EventListener eventListener) {
-        mEventListener = eventListener;
-    }
-
     /**
      * Interface for catching clicks on the ViewHolder items
      */
@@ -331,5 +411,4 @@ public class QueueListAdapter extends RecyclerView.Adapter<QueueListAdapter.Queu
         void onStartDrag(RecyclerView.ViewHolder viewHolder);
 
     }
-
 }

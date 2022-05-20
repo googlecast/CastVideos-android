@@ -61,7 +61,7 @@ public class QueueListViewActivity extends AppCompatActivity {
         @Override
         public void onSessionEnded(CastSession session, int error) {
             if (mRemoteMediaClient != null) {
-                mRemoteMediaClient.registerCallback(mRemoteMediaClientCallback);
+                mRemoteMediaClient.unregisterCallback(mRemoteMediaClientCallback);
             }
             mRemoteMediaClient = null;
             mEmptyView.setVisibility(View.VISIBLE);

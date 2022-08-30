@@ -1,0 +1,3 @@
+include ':app-java'
+include ':app-kotlin'
+rootProject.name='CastVideos-android'

@@ -1,65 +1,22 @@
-apply plugin: 'com.android.application'
-
 buildscript {
+    ext.kotlin_version = '1.7.0'
     repositories {
         jcenter()
         google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
-repositories {
-    jcenter()
-    google()
-}
-
-android {
-    compileSdkVersion 32
-
-    defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 32
-        versionCode 20
-        versionName "3.0"
-        applicationId="com.google.sample.cast.refplayer"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-    dexOptions {
-        javaMaxHeapSize "4g"
-    }
-
-    lintOptions.abortOnError false
-
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            res.srcDirs = ['res']
-        }
-        androidTest {
-            java.srcDirs = ['androidTest']
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+allprojects {
+    repositories {
+        google()
+        jcenter()
     }
 }
 
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.5.0'
-    implementation 'androidx.mediarouter:mediarouter:1.3.1'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'com.google.android.gms:play-services-cast-framework:21.1.0'
-    implementation 'com.android.volley:volley:1.2.1'
-
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0'
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test:rules:1.4.0'
-    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
-    testImplementation 'junit:junit:4.12'
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

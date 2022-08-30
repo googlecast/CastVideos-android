@@ -1,0 +1,53 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 32
+
+    defaultConfig {
+        minSdkVersion 18
+        targetSdkVersion 32
+        versionCode 20
+        versionName "3.0"
+        applicationId="com.google.sample.cast.refplayer"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions.abortOnError false
+
+    sourceSets {
+        main {
+            res.srcDirs = [projectDir.path+'/../resources']
+        }
+        androidTest {
+            java.srcDirs = ['androidTest']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    namespace 'com.google.sample.cast.refplayer'
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'androidx.mediarouter:mediarouter:1.3.1'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.google.android.gms:play-services-cast-framework:21.1.0'
+    implementation 'com.android.volley:volley:1.2.1'
+
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    testImplementation 'junit:junit:4.12'
+}

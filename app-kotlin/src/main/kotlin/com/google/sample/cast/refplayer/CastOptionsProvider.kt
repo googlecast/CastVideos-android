@@ -65,9 +65,9 @@ class CastOptionsProvider : OptionsProvider {
     }
 
     private class ImagePickerImpl : ImagePicker() {
-        override fun onPickImage(mediaMetadata: MediaMetadata, hints: ImageHints): WebImage? {
+        override fun onPickImage(mediaMetadata: MediaMetadata?, hints: ImageHints): WebImage? {
             val type = hints.type
-            if (!mediaMetadata.hasImages()) {
+            if (!mediaMetadata!!.hasImages()) {
                 return null
             }
             val images = mediaMetadata.images

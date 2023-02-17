@@ -17,6 +17,8 @@ package com.google.sample.cast.refplayer
 
 import com.google.android.gms.cast.framework.OptionsProvider
 import android.content.Context
+import android.net.Uri
+import com.bamtechmedia.dominguez.cast.image.AspectRatioImagePicker
 import com.google.android.gms.cast.LaunchOptions
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.framework.CastOptions
@@ -45,7 +47,7 @@ class CastOptionsProvider : OptionsProvider {
             .setTargetActivityClassName(ExpandedControlsActivity::class.java.name)
             .build()
         val mediaOptions = CastMediaOptions.Builder()
-            .setImagePicker(ImagePickerImpl())
+            .setImagePicker(AspectRatioImagePicker())
             .setNotificationOptions(notificationOptions)
             .setExpandedControllerActivityClassName(ExpandedControlsActivity::class.java.name)
             .build()
@@ -62,24 +64,5 @@ class CastOptionsProvider : OptionsProvider {
 
     override fun getAdditionalSessionProviders(appContext: Context): List<SessionProvider>? {
         return null
-    }
-
-    private class ImagePickerImpl : ImagePicker() {
-        override fun onPickImage(mediaMetadata: MediaMetadata?, hints: ImageHints): WebImage? {
-            val type = hints.type
-            if (!mediaMetadata!!.hasImages()) {
-                return null
-            }
-            val images = mediaMetadata.images
-            return if (images.size == 1) {
-                images[0]
-            } else {
-                if (type == IMAGE_TYPE_MEDIA_ROUTE_CONTROLLER_DIALOG_BACKGROUND) {
-                    images[0]
-                } else {
-                    images[1]
-                }
-            }
-        }
     }
 }

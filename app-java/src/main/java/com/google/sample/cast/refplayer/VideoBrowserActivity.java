@@ -16,6 +16,22 @@
 
 package com.google.sample.cast.refplayer;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.mediarouter.media.MediaControlIntent;
+import androidx.mediarouter.media.MediaRouteSelector;
+import androidx.mediarouter.media.MediaRouter;
+
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
@@ -25,19 +41,6 @@ import com.google.android.gms.cast.framework.IntroductoryOverlay;
 import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.sample.cast.refplayer.queue.ui.QueueListViewActivity;
 import com.google.sample.cast.refplayer.settings.CastPreference;
-
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -58,6 +61,9 @@ public class VideoBrowserActivity extends AppCompatActivity {
     private IntroductoryOverlay mIntroductoryOverlay;
     private CastStateListener mCastStateListener;
     private Executor localExecutor = Executors.newSingleThreadExecutor();
+    private MediaRouter mRouter;
+    private MediaRouter.Callback mCallback = new MyCallback();
+    private MediaRouteSelector mSelector;
 
     private class MySessionManagerListener implements SessionManagerListener<CastSession> {
 
@@ -126,6 +132,12 @@ public class VideoBrowserActivity extends AppCompatActivity {
             }
         };
         mCastContext = CastContext.getSharedInstance(this,localExecutor).getResult();
+
+        mRouter = MediaRouter.getInstance(this);
+        mSelector = new MediaRouteSelector.Builder()
+                .addControlCategory(MediaControlIntent.CATEGORY_LIVE_AUDIO)
+                .addControlCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
+                .build();
     }
 
     private void setupActionBar() {
@@ -201,11 +213,33 @@ public class VideoBrowserActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+
+        mRouter.addCallback(mSelector, mCallback, MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
+    }
+
+    @Override
+    public void onStop() {
+        mRouter.addCallback(mSelector, mCallback, /* flags= */ 0);
+
+        super.onStop();
+    }
+
+    @Override
     protected void onPause() {
         mCastContext.removeCastStateListener(mCastStateListener);
         mCastContext.getSessionManager().removeSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        // Remove the callback when the activity is destroyed.
+        mRouter.removeCallback(mCallback);
+
+        super.onDestroy();
     }
 
     private void showIntroductoryOverlay() {
@@ -233,5 +267,8 @@ public class VideoBrowserActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private final class MyCallback extends MediaRouter.Callback {
     }
 }

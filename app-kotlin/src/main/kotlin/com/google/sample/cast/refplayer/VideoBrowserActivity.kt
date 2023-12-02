@@ -15,29 +15,31 @@
  */
 package com.google.sample.cast.refplayer
 
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.framework.SessionManagerListener
-import com.google.android.gms.cast.framework.CastSession
-import android.view.MenuItem
-import com.google.android.gms.cast.framework.IntroductoryOverlay
-import com.google.android.gms.cast.framework.CastStateListener
-import android.os.Bundle
-import com.google.android.gms.cast.framework.CastState
-import android.view.View
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.Menu
-import com.google.android.gms.cast.framework.CastButtonFactory
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.mediarouter.media.MediaControlIntent
+import androidx.mediarouter.media.MediaRouteSelector
+import androidx.mediarouter.media.MediaRouter
+import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.framework.CastSession
+import com.google.android.gms.cast.framework.CastState
+import com.google.android.gms.cast.framework.CastStateListener
+import com.google.android.gms.cast.framework.IntroductoryOverlay
+import com.google.android.gms.cast.framework.SessionManagerListener
 import com.google.sample.cast.refplayer.queue.ui.QueueListViewActivity
 import com.google.sample.cast.refplayer.settings.CastPreference
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
@@ -53,6 +55,12 @@ class VideoBrowserActivity : AppCompatActivity() {
     private var mIntroductoryOverlay: IntroductoryOverlay? = null
     private var mCastStateListener: CastStateListener? = null
     private val  castExecutor: Executor = Executors.newSingleThreadExecutor();
+    private var mediaRouter: MediaRouter? = null
+    private var mediaRouterCallback = object : MediaRouter.Callback() {}
+    private var mediaRouteSelector: MediaRouteSelector = MediaRouteSelector.Builder()
+        .addControlCategory(MediaControlIntent.CATEGORY_LIVE_AUDIO)
+        .addControlCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
+        .build()
 
     private inner class MySessionManagerListener : SessionManagerListener<CastSession> {
         override fun onSessionEnded(session: CastSession, error: Int) {
@@ -90,6 +98,7 @@ class VideoBrowserActivity : AppCompatActivity() {
             }
         }
         mCastContext = CastContext.getSharedInstance(this,castExecutor).result
+        mediaRouter = MediaRouter.getInstance(this)
     }
 
     private fun setupActionBar() {
@@ -158,12 +167,31 @@ class VideoBrowserActivity : AppCompatActivity() {
         super.onResume()
     }
 
+    override fun onStart() {
+        mediaRouter?.addCallback(
+            mediaRouteSelector,
+            mediaRouterCallback,
+            MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY
+        )
+        super.onStart()
+    }
+
     override fun onPause() {
         mCastContext!!.removeCastStateListener(mCastStateListener!!)
         mCastContext!!.sessionManager.removeSessionManagerListener(
             mSessionManagerListener, CastSession::class.java
         )
         super.onPause()
+    }
+
+    override fun onStop() {
+        mediaRouter?.addCallback(mediaRouteSelector, mediaRouterCallback, 0)
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        mediaRouter?.removeCallback(mediaRouterCallback)
+        super.onDestroy()
     }
 
     private fun showIntroductoryOverlay() {

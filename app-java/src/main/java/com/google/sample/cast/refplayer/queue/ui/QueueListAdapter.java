@@ -166,15 +166,6 @@ public class QueueListAdapter extends MediaQueueRecyclerViewAdapter<QueueListAda
                 }
             };
             holder.mImageView.setImageUrl(mImageLoader.get(imageUrl, imageListener).getRequestUrl(), mImageLoader);
-        } else {
-            holder.mProgressLoading.postDelayed( new Runnable() {
-                @Override
-                public void run() {
-                    holder.mProgressLoading.setVisibility(View.GONE);
-                    holder.mImageView.setDefaultImageResId(R.drawable.cast_album_art_placeholder);
-                    holder.mImageView.setImageResource(R.drawable.cast_album_art_placeholder);
-                }
-            },3000);
         }
 
         holder.mDragHandle.setOnTouchListener(new View.OnTouchListener() {
@@ -339,9 +330,8 @@ public class QueueListAdapter extends MediaQueueRecyclerViewAdapter<QueueListAda
 
         private void updateControlsStatus(@QueueListAdapter.QueueItemViewHolder.ControlStatus int status) {
             int bgResId = R.drawable.bg_item_normal_state;
-            mTitleView.setTextAppearance(mContext, R.style.Base_TextAppearance_AppCompat_Subhead);
-            mDescriptionView.setTextAppearance(mContext,
-                    R.style.Base_TextAppearance_AppCompat_Caption);
+            mTitleView.setTextAppearance(mContext, R.style.CastSubhead);
+            mDescriptionView.setTextAppearance(mContext, R.style.CastCaption);
             Log.d(TAG,"updateControlsStatus for status = "+status);
             switch (status) {
                 case CURRENT:
@@ -357,12 +347,9 @@ public class QueueListAdapter extends MediaQueueRecyclerViewAdapter<QueueListAda
                     mUpcomingControls.setVisibility(View.VISIBLE);
                     mDragHandle.setImageResource(DRAG_HANDLER_LIGHT_RESOURCE);
                     bgResId = R.drawable.bg_item_upcoming_state;
-                    mTitleView.setTextAppearance(mContext,
-                            R.style.TextAppearance_AppCompat_Small_Inverse);
-                    mTitleView.setTextAppearance(mTitleView.getContext(),
-                            R.style.Base_TextAppearance_AppCompat_Subhead_Inverse);
-                    mDescriptionView.setTextAppearance(mContext,
-                            R.style.Base_TextAppearance_AppCompat_Caption);
+                    mTitleView.setTextAppearance(mContext, R.style.CastSmallInverse);
+                    mTitleView.setTextAppearance(mTitleView.getContext(), R.style.CastSubheadInverse);
+                    mDescriptionView.setTextAppearance(mContext, R.style.CastCaption);
                     break;
                 default:
                     mControls.setVisibility(View.GONE);

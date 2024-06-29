@@ -183,16 +183,13 @@ public class QueueListViewActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                startActivity(new Intent(QueueListViewActivity.this, CastPreference.class));
-                break;
-            case R.id.action_clear_queue:
-                QueueDataProvider.getInstance(getApplicationContext()).removeAll();
-                break;
-            case android.R.id.home:
-                finish();
-                break;
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            startActivity(new Intent(QueueListViewActivity.this, CastPreference.class));
+        } else if (id == R.id.action_clear_queue) {
+            QueueDataProvider.getInstance(getApplicationContext()).removeAll();
+        } else if (id == android.R.id.home) {
+            finish();
         }
         return true;
     }

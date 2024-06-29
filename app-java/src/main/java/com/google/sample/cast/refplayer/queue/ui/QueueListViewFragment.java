@@ -83,25 +83,21 @@ public class QueueListViewFragment extends Fragment
         adapter.setEventListener(new QueueListAdapter.EventListener() {
             @Override
             public void onItemViewClicked(View view) {
-                switch (view.getId()) {
-                    case R.id.container:
-                        Log.d(TAG, "onItemViewClicked() container "
-                                + view.getTag(R.string.queue_tag_item));
-                        onContainerClicked(view);
-                        break;
-                    case R.id.play_pause:
-                        Log.d(TAG, "onItemViewClicked() play-pause "
-                                + view.getTag(R.string.queue_tag_item));
-                        onPlayPauseClicked(view);
-                        break;
-                    case R.id.play_upcoming:
-                        mProvider.onUpcomingPlayClicked(view,
-                                (MediaQueueItem) view.getTag(R.string.queue_tag_item));
-                        break;
-                    case R.id.stop_upcoming:
-                        mProvider.onUpcomingStopClicked(view,
-                                (MediaQueueItem) view.getTag(R.string.queue_tag_item));
-                        break;
+                int id = view.getId();
+                if (id == R.id.container) {
+                    Log.d(TAG, "onItemViewClicked() container "
+                        + view.getTag(R.string.queue_tag_item));
+                    onContainerClicked(view);
+                } else if (id == R.id.play_pause) {
+                    Log.d(TAG, "onItemViewClicked() play-pause "
+                        + view.getTag(R.string.queue_tag_item));
+                    onPlayPauseClicked(view);
+                } else if (id == R.id.play_upcoming) {
+                    mProvider.onUpcomingPlayClicked(view,
+                        (MediaQueueItem) view.getTag(R.string.queue_tag_item));
+                } else if (id == R.id.stop_upcoming) {
+                    mProvider.onUpcomingStopClicked(view,
+                        (MediaQueueItem) view.getTag(R.string.queue_tag_item));
                 }
             }
         });

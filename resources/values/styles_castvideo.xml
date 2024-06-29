@@ -97,4 +97,26 @@
 
     <style name="CustomCastExpandedController" parent="CastExpandedController"/>
 
+    <dimen name="subhead_text_size">16sp</dimen>
+    <dimen name="caption_text_size">12sp</dimen>
+
+    <style name="CastSubhead">
+        <item name="android:textSize">@dimen/subhead_text_size</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+    </style>
+
+    <style name="CastSubheadInverse">
+        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+        <item name="android:textColorHint">?android:attr/textColorHintInverse</item>
+    </style>
+
+    <style name="CastSmallInverse">
+        <item name="android:textColor">?android:attr/textColorTertiaryInverse</item>
+        <item name="android:textColorHint">?android:attr/textColorHintInverse</item>
+    </style>
+
+    <style name="CastCaption">
+        <item name="android:textSize">@dimen/caption_text_size</item>
+        <item name="android:textColor">?android:textColorSecondary</item>
+    </style>
 </resources>

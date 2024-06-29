@@ -145,12 +145,6 @@ class QueueListAdapter(
                 mImageLoader!![imageUrl, imageListener].requestUrl,
                 mImageLoader
             )
-        } else {
-            holder.mProgressLoading.postDelayed({
-                holder.mProgressLoading.visibility = View.GONE
-                holder.mImageView.setDefaultImageResId(R.drawable.cast_album_art_placeholder)
-                holder.mImageView.setImageResource(R.drawable.cast_album_art_placeholder)
-            }, 3000)
         }
         holder.mDragHandle.setOnTouchListener(OnTouchListener { view, event ->
             if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
@@ -282,11 +276,8 @@ class QueueListAdapter(
 
         fun updateControlsStatus(@ControlStatus status: Int) {
             var bgResId = R.drawable.bg_item_normal_state
-            mTitleView.setTextAppearance(mContext, R.style.Base_TextAppearance_AppCompat_Subhead)
-            mDescriptionView.setTextAppearance(
-                mContext,
-                R.style.Base_TextAppearance_AppCompat_Caption
-            )
+            mTitleView.setTextAppearance(mContext, R.style.CastSubhead)
+            mDescriptionView.setTextAppearance(mContext, R.style.CastCaption)
             Log.d(TAG, "updateControlsStatus for status = $status")
             when (status) {
                 CURRENT -> {
@@ -302,18 +293,9 @@ class QueueListAdapter(
                     mUpcomingControls.visibility = View.VISIBLE
                     mDragHandle.setImageResource(DRAG_HANDLER_LIGHT_RESOURCE)
                     bgResId = R.drawable.bg_item_upcoming_state
-                    mTitleView.setTextAppearance(
-                        mContext,
-                        R.style.TextAppearance_AppCompat_Small_Inverse
-                    )
-                    mTitleView.setTextAppearance(
-                        mTitleView.context,
-                        R.style.Base_TextAppearance_AppCompat_Subhead_Inverse
-                    )
-                    mDescriptionView.setTextAppearance(
-                        mContext,
-                        R.style.Base_TextAppearance_AppCompat_Caption
-                    )
+                    mTitleView.setTextAppearance(mContext, R.style.CastSmallInverse)
+                    mTitleView.setTextAppearance(mTitleView.context, R.style.CastSubheadInverse)
+                    mDescriptionView.setTextAppearance(mContext, R.style.CastCaption)
                 }
                 else -> {
                     mControls.visibility = View.GONE
@@ -370,9 +352,9 @@ class QueueListAdapter(
 
     companion object {
         private const val TAG = "QueueListAdapter"
-        private const val PLAY_RESOURCE = R.drawable.ic_play_arrow_grey600_48dp
-        private const val PAUSE_RESOURCE = R.drawable.ic_pause_grey600_48dp
-        private const val DRAG_HANDLER_DARK_RESOURCE = R.drawable.ic_drag_updown_grey_24dp
-        private const val DRAG_HANDLER_LIGHT_RESOURCE = R.drawable.ic_drag_updown_white_24dp
+        private val PLAY_RESOURCE = R.drawable.ic_play_arrow_grey600_48dp
+        private val PAUSE_RESOURCE = R.drawable.ic_pause_grey600_48dp
+        private val DRAG_HANDLER_DARK_RESOURCE = R.drawable.ic_drag_updown_grey_24dp
+        private val DRAG_HANDLER_LIGHT_RESOURCE = R.drawable.ic_drag_updown_white_24dp
     }
 }

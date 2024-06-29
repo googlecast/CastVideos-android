@@ -50,7 +50,7 @@ class CastPreference constructor() : FragmentActivity() {
 
          override fun onSharedPreferenceChanged(
              sharedPreferences: SharedPreferences,
-             key: String
+             key: String?
          ) {
              // Handle volume and caption preferences.
          }

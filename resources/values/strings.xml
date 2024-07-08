@@ -101,4 +101,9 @@
     <string name="queue_item_added_to_play_next">An item was added to play next</string>
     <string name="queue_item_added_to_queue">An item was added to the queue</string>
 
+    <!--Local playback notification-->
+    <string name="local_playback_notification_channel">Media Playback</string>
+    <string name="local_playback_notification_play_action_title">Play</string>
+    <string name="local_playback_notification_pause_action_title">Pause</string>
+    <string name="local_playback_notification_stop_action_title">Stop</string>
 </resources>

@@ -126,6 +126,8 @@ public class VideoBrowserActivity extends AppCompatActivity {
             }
         };
         mCastContext = CastContext.getSharedInstance(this,localExecutor).getResult();
+        mCastContext.addSessionTransferCallback(
+            new CastSessionTransferCallback(getApplicationContext()));
     }
 
     private void setupActionBar() {

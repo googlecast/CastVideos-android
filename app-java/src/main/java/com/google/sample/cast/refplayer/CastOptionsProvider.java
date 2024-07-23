@@ -59,6 +59,7 @@ public class CastOptionsProvider implements OptionsProvider {
         return new CastOptions.Builder()
                 .setLaunchOptions(launchOptions)
                 .setReceiverApplicationId(context.getString(R.string.app_id))
+                .setRemoteToLocalEnabled(true)
                 .setCastMediaOptions(mediaOptions)
                 .build();
     }

@@ -15,29 +15,28 @@
  */
 package com.google.sample.cast.refplayer
 
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.framework.SessionManagerListener
-import com.google.android.gms.cast.framework.CastSession
-import android.view.MenuItem
-import com.google.android.gms.cast.framework.IntroductoryOverlay
-import com.google.android.gms.cast.framework.CastStateListener
-import android.os.Bundle
-import com.google.android.gms.cast.framework.CastState
-import android.view.View
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.Menu
-import com.google.android.gms.cast.framework.CastButtonFactory
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.framework.CastSession
+import com.google.android.gms.cast.framework.CastState
+import com.google.android.gms.cast.framework.CastStateListener
+import com.google.android.gms.cast.framework.IntroductoryOverlay
+import com.google.android.gms.cast.framework.SessionManagerListener
 import com.google.sample.cast.refplayer.queue.ui.QueueListViewActivity
 import com.google.sample.cast.refplayer.settings.CastPreference
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
@@ -90,6 +89,11 @@ class VideoBrowserActivity : AppCompatActivity() {
             }
         }
         mCastContext = CastContext.getSharedInstance(this,castExecutor).result
+        mCastContext?.addSessionTransferCallback(
+            CastSessionTransferCallback(
+                applicationContext
+            )
+        )
     }
 
     private fun setupActionBar() {

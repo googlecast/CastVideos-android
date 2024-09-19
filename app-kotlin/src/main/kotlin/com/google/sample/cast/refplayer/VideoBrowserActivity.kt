@@ -27,6 +27,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.Lifecycle
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastSession
@@ -52,6 +53,7 @@ class VideoBrowserActivity : AppCompatActivity() {
     private var mIntroductoryOverlay: IntroductoryOverlay? = null
     private var mCastStateListener: CastStateListener? = null
     private val  castExecutor: Executor = Executors.newSingleThreadExecutor();
+    private var hasValidCastContextOnResume = false
 
     private inner class MySessionManagerListener : SessionManagerListener<CastSession> {
         override fun onSessionEnded(session: CastSession, error: Int) {
@@ -88,12 +90,50 @@ class VideoBrowserActivity : AppCompatActivity() {
                 showIntroductoryOverlay()
             }
         }
-        mCastContext = CastContext.getSharedInstance(this,castExecutor).result
-        mCastContext?.addSessionTransferCallback(
-            CastSessionTransferCallback(
-                applicationContext
-            )
+        val castContextTask = CastContext.getSharedInstance(this, castExecutor)
+        castContextTask.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // Task completed successfully
+                onCastContextInitialized(task.result!!)
+            } else {
+                // Task failed with an exception
+                Log.e(
+                    TAG,
+                    "fail to initialize CastContext"
+                )
+            }
+        }
+    }
+
+    @Synchronized
+    private fun onCastContextInitialized(castContext: CastContext) {
+        Log.i(TAG, "CastContext is initialized and used for onCreate")
+        mCastContext = castContext
+        mCastContext!!.sessionManager.addSessionManagerListener(
+            mSessionManagerListener, CastSession::class.java
         )
+        mCastContext!!.addSessionTransferCallback(
+            CastSessionTransferCallback(applicationContext)
+        )
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && !hasValidCastContextOnResume) {
+            // If the activity's lifecycle is equal to or greater than the onResumed state but the
+            // CastContext was not initialized when the onResume() is called, we need to execute the
+            // method "onResumeWithCastContext" which was skipped previously in the onResume().
+            onResumeWithCastContext(castContext)
+        }
+    }
+
+    @Synchronized
+    private fun onResumeWithCastContext(castContext: CastContext) {
+        castContext!!.addCastStateListener(mCastStateListener!!)
+        intentToJoin()
+        if (mCastSession == null) {
+            mCastSession = castContext!!.sessionManager.currentCastSession
+        }
+        if (mQueueMenuItem != null) {
+            mQueueMenuItem!!.isVisible = mCastSession != null && mCastSession!!.isConnected
+        }
+        hasValidCastContextOnResume = true
     }
 
     private fun setupActionBar() {
@@ -147,19 +187,11 @@ class VideoBrowserActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        mCastContext!!.addCastStateListener(mCastStateListener!!)
-        mCastContext!!.sessionManager.addSessionManagerListener(
-            mSessionManagerListener, CastSession::class.java
-        )
-        intentToJoin()
-        if (mCastSession == null) {
-            mCastSession = CastContext.getSharedInstance(this,castExecutor).result.sessionManager
-                .currentCastSession
-        }
-        if (mQueueMenuItem != null) {
-            mQueueMenuItem!!.isVisible = mCastSession != null && mCastSession!!.isConnected
-        }
         super.onResume()
+        Log.d(TAG, "onResume() is called")
+        if (mCastContext != null) {
+            onResumeWithCastContext(mCastContext!!)
+        }
     }
 
     override fun onPause() {

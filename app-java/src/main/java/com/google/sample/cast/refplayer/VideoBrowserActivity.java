@@ -16,6 +16,8 @@
 
 package com.google.sample.cast.refplayer;
 
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.Lifecycle.State;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
@@ -23,6 +25,8 @@ import com.google.android.gms.cast.framework.CastState;
 import com.google.android.gms.cast.framework.CastStateListener;
 import com.google.android.gms.cast.framework.IntroductoryOverlay;
 import com.google.android.gms.cast.framework.SessionManagerListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.sample.cast.refplayer.queue.ui.QueueListViewActivity;
 import com.google.sample.cast.refplayer.settings.CastPreference;
 
@@ -57,7 +61,8 @@ public class VideoBrowserActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private IntroductoryOverlay mIntroductoryOverlay;
     private CastStateListener mCastStateListener;
-    private Executor localExecutor = Executors.newSingleThreadExecutor();
+    private Executor castExecutor = Executors.newSingleThreadExecutor();
+    private boolean hasValidCastContextOnResume;
 
     private class MySessionManagerListener implements SessionManagerListener<CastSession> {
 
@@ -125,9 +130,48 @@ public class VideoBrowserActivity extends AppCompatActivity {
                 }
             }
         };
-        mCastContext = CastContext.getSharedInstance(this,localExecutor).getResult();
+        Task<CastContext> castContextTask = CastContext.getSharedInstance(this, castExecutor);
+        castContextTask.addOnCompleteListener(
+            new OnCompleteListener<CastContext>() {
+                @Override
+                public void onComplete(Task<CastContext> task) {
+                    if (task.isSuccessful()) {
+                        // Task completed successfully
+                        onCastContextInitialized(task.getResult());
+                    } else {
+                        // Task failed with an exception
+                        Log.e(TAG, "fail to initialize CastContext");
+                    }
+                }
+            });
+    }
+
+    private synchronized void onCastContextInitialized(CastContext castContext) {
+        Log.i(TAG, "CastContext is initialized and used for onCreate");
+        mCastContext = castContext;
+        mCastContext.getSessionManager().addSessionManagerListener(
+            mSessionManagerListener, CastSession.class);
         mCastContext.addSessionTransferCallback(
             new CastSessionTransferCallback(getApplicationContext()));
+        if (getLifecycle().getCurrentState().isAtLeast(State.RESUMED) && !hasValidCastContextOnResume) {
+            // If the activity's lifecycle is equal to or greater than the onResumed state but the
+            // CastContext was not initialized when the onResume() is called, we need to execute the
+            // method "onResumeWithCastContext" which was skipped previously in the onResume().
+            onResumeWithCastContext(castContext);
+        }
+    }
+
+    private synchronized void onResumeWithCastContext(CastContext castContext) {
+        castContext.addCastStateListener(mCastStateListener);
+        intentToJoin();
+        if (mCastSession == null) {
+            mCastSession = castContext.getSessionManager().getCurrentCastSession();
+        }
+        if (mQueueMenuItem != null) {
+            mQueueMenuItem.setVisible(
+                (mCastSession != null) && mCastSession.isConnected());
+        }
+        hasValidCastContextOnResume = true;
     }
 
     private void setupActionBar() {
@@ -185,21 +229,11 @@ public class VideoBrowserActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        mCastContext.addCastStateListener(mCastStateListener);
-        mCastContext.getSessionManager().addSessionManagerListener(
-                mSessionManagerListener, CastSession.class);
-        intentToJoin();
-        if (mCastSession == null) {
-            mCastSession = CastContext.getSharedInstance(this,localExecutor)
-                    .getResult()
-                    .getSessionManager()
-                    .getCurrentCastSession();
-        }
-        if (mQueueMenuItem != null) {
-            mQueueMenuItem.setVisible(
-                    (mCastSession != null) && mCastSession.isConnected());
-        }
         super.onResume();
+        Log.d(TAG, "onResume() is called");
+        if (mCastContext != null) {
+            onResumeWithCastContext(mCastContext);
+        }
     }
 
     @Override
